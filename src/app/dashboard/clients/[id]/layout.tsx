@@ -7,6 +7,9 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { mockClients } from "@/lib/data/mock-clients";
 import { notFound } from "next/navigation";
 
+import { mockAssessments } from "@/lib/data/mock-assessments";
+import { PDFDownloadButton } from "@/components/reports/PDFDownloadButton";
+
 interface ClientLayoutProps {
     children: React.ReactNode;
     params: Promise<{ id: string }>;
@@ -19,6 +22,8 @@ export default async function ClientLayout({ children, params }: ClientLayoutPro
     if (!client) {
         notFound();
     }
+
+    const clientAssessments = mockAssessments.filter((a) => a.clientId === id);
 
     const getInitials = (first: string, last: string) => {
         return `${first.charAt(0)}${last.charAt(0)}`.toUpperCase();
@@ -37,6 +42,12 @@ export default async function ClientLayout({ children, params }: ClientLayoutPro
                 <div className="flex-1">
                     <h1 className="text-2xl font-bold tracking-tight">Perfil del Cliente</h1>
                 </div>
+                <PDFDownloadButton
+                    clientName={`${client.firstName} ${client.lastName}`}
+                    clientEmail={client.email}
+                    goal={client.goal}
+                    assessments={clientAssessments}
+                />
                 <Button variant="outline" size="sm">
                     <Settings className="mr-2 h-4 w-4" />
                     Configuración
@@ -64,7 +75,11 @@ export default async function ClientLayout({ children, params }: ClientLayoutPro
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <Button>Nueva Valoración</Button>
+                    <Button asChild>
+                        <Link href={`/dashboard/clients/${id}/new-assessment`}>
+                            Nueva Valoración
+                        </Link>
+                    </Button>
                 </div>
             </div>
 
