@@ -45,6 +45,10 @@ export default function LoginPage() {
     const { isSubmitting } = form.formState;
 
     async function onSubmit(values: z.infer<typeof loginSchema>) {
+        // TODO: Replace with actual API call using process.env.NEXT_PUBLIC_API_URL
+        // const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        console.log("Connecting to API at:", process.env.NEXT_PUBLIC_API_URL);
+
         // Simulate API call
         await new Promise((resolve) => setTimeout(resolve, 1500));
         console.log(values);
