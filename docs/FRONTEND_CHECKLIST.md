@@ -31,27 +31,27 @@
 ## Fase 2 — Gestión Visual (Semana 5–8)
 
 ### Sprint 2: Dashboard y Perfiles
-- [ ] Directorio de Clientes: Tabla/Grid con búsqueda (debounce)
-- [ ] Componente `ClientCard` para listados
+- [x] Directorio de Clientes: Tabla/Grid con búsqueda (debounce)
+- [x] Componente `ClientCard` para listados
 - [ ] Página Perfil: Header con acciones rápidas
 - [ ] Tabs de navegación interna (Resumen, Historial, Fotos)
 - [ ] Vista de "Última Bioimpedancia" en el perfil
 
 ### Sprint 3: Evaluaciones e Historial
-- [ ] Formulario `NewEvaluation`: Versión simplificada del wizard
-- [ ] UX "Side-by-side": Inputs actuales vs Datos anteriores
-- [ ] Componente Timeline para historial de evaluaciones
-- [ ] Visualización de detalles de evaluación pasada
+- [x] Formulario `NewEvaluation`: Versión simplificada del wizard
+- [x] UX "Side-by-side": Inputs actuales vs Datos anteriores
+- [x] Componente Timeline para historial de evaluaciones
+- [x] Visualización de detalles de evaluación pasada
 
 ---
 
 ## Fase 3 — Visualización (Semana 9–12)
 
 ### Sprint 4: Gráficas y Comparativas
-- [ ] Implementación Recharts: `WeightChart` (Línea de tiempo)
-- [ ] Implementación Recharts: `CompositionChart` (Áreas apiladas)
+- [x] Implementación Recharts: `WeightChart` (Línea de tiempo)
+- [x] Implementación Recharts: `CompositionChart` (Áreas apiladas)
 - [ ] Componente `react-compare-slider` (Fotos Antes/Después)
-- [ ] Badges de tendencia (⬇️ 2kg, ⬆️ 1.5% masa)
+- [x] Badges de tendencia (⬇️ 2kg, ⬆️ 1.5% masa)
 
 ### Sprint 5: Reportes PDF
 - [ ] Diseño de documento PDF con componentes React-PDF
