@@ -17,10 +17,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import WizardLayout from "../WizardLayout";
+import { WizardLayout } from "../WizardLayout";
 import { Dumbbell, TrendingUp, Activity, User } from "lucide-react";
 
-export default function StepObjectives() {
+export function StepObjectives() {
     const { data, setObjectives, nextStep, prevStep } = useWizardStore();
 
     const form = useForm<Objectives>({

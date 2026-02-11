@@ -1,23 +1,17 @@
 "use client";
 
 import { useWizardStore } from "@/store/wizard-store";
-import StepPersonalData from "@/components/wizard/steps/StepPersonalData";
-import StepObjectives from "@/components/wizard/steps/StepObjectives";
-import StepPhysicalAssessment from "@/components/wizard/steps/StepPhysicalAssessment";
-import StepAvailability from "@/components/wizard/steps/StepAvailability";
-import StepReview from "@/components/wizard/steps/StepReview";
-import { useEffect, useState } from "react";
+import { WizardLayout } from "@/components/wizard/WizardLayout";
+import { StepPersonalData } from "@/components/wizard/steps/StepPersonalData";
+import { StepObjectives } from "@/components/wizard/steps/StepObjectives";
+import { StepPhysicalAssessment } from "@/components/wizard/steps/StepPhysicalAssessment";
+import { StepBioimpedance } from "@/components/wizard/steps/StepBioimpedance";
+import { StepPhotos } from "@/components/wizard/steps/StepPhotos";
+import { StepAvailability } from "@/components/wizard/steps/StepAvailability";
+import { StepReview } from "@/components/wizard/steps/StepReview";
 
 export default function NewClientPage() {
     const { currentStep } = useWizardStore();
-    const [isMounted, setIsMounted] = useState(false);
-
-    // Prevent hydration mismatch for zustand persist
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
-
-    if (!isMounted) return null;
 
     const renderStep = () => {
         switch (currentStep) {
@@ -28,13 +22,17 @@ export default function NewClientPage() {
             case 2:
                 return <StepPhysicalAssessment />;
             case 3:
-                return <StepAvailability />;
+                return <StepBioimpedance />;
             case 4:
+                return <StepPhotos />;
+            case 5:
+                return <StepAvailability />;
+            case 6:
                 return <StepReview />;
             default:
                 return <StepPersonalData />;
         }
     };
 
-    return <div className="animate-in fade-in zoom-in duration-500">{renderStep()}</div>;
+    return <>{renderStep()}</>;
 }

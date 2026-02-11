@@ -1,18 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { mockClients } from "@/lib/data/mock-clients";
 import { ClientCard } from "@/components/clients/ClientCard";
+import { ClientCardSkeleton } from "@/components/clients/ClientCardSkeleton";
 import { ClientFilters } from "@/components/clients/ClientFilters";
 
 export default function ClientsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
+    const [isLoading, setIsLoading] = useState(true);
+    const [displayedClients, setDisplayedClients] = useState<typeof mockClients>([]);
 
-    const filteredClients = mockClients.filter((client) => {
+    useEffect(() => {
+        // Simulate loading delay
+        const timer = setTimeout(() => {
+            setDisplayedClients(mockClients);
+            setIsLoading(false);
+        }, 1000);
+        return () => clearTimeout(timer);
+    }, []);
+
+    const filteredClients = displayedClients.filter((client) => {
         const matchesSearch =
             client.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
             client.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -43,7 +55,13 @@ export default function ClientsPage() {
                 setStatusFilter={setStatusFilter}
             />
 
-            {filteredClients.length > 0 ? (
+            {isLoading ? (
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                        <ClientCardSkeleton key={i} />
+                    ))}
+                </div>
+            ) : filteredClients.length > 0 ? (
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {filteredClients.map((client) => (
                         <ClientCard key={client.id} client={client} />

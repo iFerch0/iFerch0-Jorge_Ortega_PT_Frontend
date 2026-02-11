@@ -21,7 +21,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import WizardLayout from "../WizardLayout";
+import { WizardLayout } from "../WizardLayout";
 
 const daysOfWeek = [
     { id: "monday", label: "Lunes" },
@@ -42,7 +42,7 @@ const equipmentList = [
     { id: "cardio_machine", label: "Máquina de Cardio" },
 ];
 
-export default function StepAvailability() {
+export function StepAvailability() {
     const { data, setAvailability, nextStep, prevStep } = useWizardStore();
 
     const form = useForm<Availability>({

@@ -21,9 +21,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import WizardLayout from "../WizardLayout";
+import { WizardLayout } from "../WizardLayout";
 
-export default function StepPersonalData() {
+export function StepPersonalData() {
     const { data, setPersonalData, nextStep } = useWizardStore();
 
     const form = useForm<PersonalData>({

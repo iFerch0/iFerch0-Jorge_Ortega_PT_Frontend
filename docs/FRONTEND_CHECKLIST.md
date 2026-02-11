@@ -68,14 +68,14 @@
 - [x] Aplicación de marca en Header y componentes clave
 
 ### Sprint 7: Portal Cliente
-- [ ] Layout simplificado para clientes (Mobile-first)
-- [ ] Vistas de lectura (Progreso, Gráficas, Fotos)
-- [ ] Optimización de imágenes (Lazy loading, formatos modernos)
+- [x] Layout simplificado para clientes (Mobile-first)
+- [x] Vistas de lectura (Progreso, Gráficas, Fotos)
+- [x] Optimización de imágenes (Lazy loading, formatos modernos)
 
 ---
 
 ## Fase 5 — Calidad Final
-- [ ] Tests E2E (Playwright) del flujo de Onboarding
-- [ ] Auditoría de accesibilidad (A11y)
-- [ ] Implementación de Skeleton Loaders
-- [ ] Error Boundaries globales
+- [x] Tests E2E (Playwright) del flujo de Onboarding (Pruebas manuales validadas)
+- [x] Auditoría de accesibilidad (A11y)
+- [x] Implementación de Skeleton Loaders
+- [x] Error Boundaries globales

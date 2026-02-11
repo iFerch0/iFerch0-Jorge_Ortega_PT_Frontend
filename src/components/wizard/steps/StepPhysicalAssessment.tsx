@@ -15,9 +15,9 @@ import {
     FormDescription,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import WizardLayout from "../WizardLayout";
+import { WizardLayout } from "../WizardLayout";
 
-export default function StepPhysicalAssessment() {
+export function StepPhysicalAssessment() {
     const { data, setPhysicalAssessment, nextStep, prevStep } = useWizardStore();
 
     const form = useForm<PhysicalAssessment>({

@@ -31,15 +31,26 @@ export const availabilitySchema = z.object({
     equipment: z.array(z.string()).min(1, "Selecciona el equipo disponible"),
 });
 
+// Bioimpedancia Schema (Paso 4)
+export const bioimpedanceSchema = z.object({
+    waist: z.coerce.number().min(30, "Cintura requerida"),
+    hip: z.coerce.number().min(30, "Cadera requerida"),
+    bodyFat: z.coerce.number().min(1, "% Grasa requerido").max(60),
+    muscleMass: z.coerce.number().min(10, "% Músculo requerido").max(60),
+    visceralFat: z.coerce.number().min(1, "Grasa visceral requerida").max(30),
+});
+
 export const wizardSchema = z.object({
     personalData: personalDataSchema,
     objectives: objectivesSchema,
     physicalAssessment: physicalAssessmentSchema,
+    bioimpedance: bioimpedanceSchema,
     availability: availabilitySchema,
 });
 
 export type PersonalData = z.infer<typeof personalDataSchema>;
 export type Objectives = z.infer<typeof objectivesSchema>;
 export type PhysicalAssessment = z.infer<typeof physicalAssessmentSchema>;
+export type Bioimpedance = z.infer<typeof bioimpedanceSchema>;
 export type Availability = z.infer<typeof availabilitySchema>;
 export type WizardData = z.infer<typeof wizardSchema>;

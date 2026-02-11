@@ -14,11 +14,13 @@ const steps = [
     { id: 0, name: "Datos Personales" },
     { id: 1, name: "Objetivos" },
     { id: 2, name: "Valoración" },
-    { id: 3, name: "Disponibilidad" },
-    { id: 4, name: "Resumen" },
+    { id: 3, name: "Bioimpedancia" },
+    { id: 4, name: "Fotos" },
+    { id: 5, name: "Disponibilidad" },
+    { id: 6, name: "Resumen" },
 ];
 
-export default function WizardLayout({
+export function WizardLayout({
     children,
     title,
     description,
