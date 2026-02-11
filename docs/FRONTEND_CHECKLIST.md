@@ -16,15 +16,15 @@
 ## Fase 1 — Core UX (Semana 3–4)
 
 ### Sprint 1: Wizard de Onboarding
-- [ ] Hook `useClientWizard` (Estado persistente del formulario)
-- [ ] Componente `StepIndicator` (Barra de progreso visual)
-- [ ] Step 1: Datos Personales + Upload Avatar
-- [ ] Step 2: Objetivos (Tarjetas seleccionables)
-- [ ] Step 3: Patologías (Checklists condicionales)
+- [x] Hook `useClientWizard` (Estado persistente del formulario)
+- [x] Componente `StepIndicator` (Barra de progreso visual)
+- [x] Step 1: Datos Personales + Upload Avatar
+- [x] Step 2: Objetivos (Tarjetas seleccionables)
+- [x] Step 3: Patologías (Checklists condicionales)
 - [ ] Step 4: Bioimpedancia (Formulario numérico)
 - [ ] Step 5: Fotos (Upload múltiple con `react-dropzone`)
-- [ ] Step 6: Resumen y Confirmación
-- [ ] Feedback visual de carga durante el guardado
+- [x] Step 6: Resumen y Confirmación
+- [x] Feedback visual de carga durante el guardado
 
 ---
 
