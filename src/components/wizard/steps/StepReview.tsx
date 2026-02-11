@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { WizardLayout } from "../WizardLayout";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
-// Import from lucide-react icons for visual feedback
 import { User, Target, Activity, Calendar, Scale, Camera } from "lucide-react";
 
 export function StepReview() {
@@ -16,19 +15,106 @@ export function StepReview() {
     const router = useRouter();
 
     async function onComplete() {
-        // ... (keep existing)
         setIsSubmitting(true);
 
         try {
-            // Simulate API Call
-            console.log("Submitting Wizard Data:", data);
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+            // 1. Preparar datos para Crear Cliente
+            // Calculamos una fecha de nacimiento aproximada ya que solo tenemos edad
+            const currentYear = new Date().getFullYear();
+            const birthYear = currentYear - (data.personalData?.age || 20);
+            const approximateBirthDate = `${birthYear}-01-01`; // ISO YYYY-MM-DD
 
-            toast.success("Cliente creado exitosamente");
-            resetWizard(); // Clear store
+            const clientPayload = {
+                firstName: data.personalData?.firstName,
+                lastName: data.personalData?.lastName,
+                email: data.personalData?.email,
+                phone: data.personalData?.phone,
+                birthDate: approximateBirthDate,
+                gender: data.personalData?.gender?.toUpperCase(), // API expects uppercase probably, checking docs: MALE/FEMALE
+                height: data.personalData?.height,
+                objectives: [{ content: data.objectives?.goal }, { content: data.objectives?.notes }].filter(o => o.content),
+                pathologies: [
+                    { name: data.physicalAssessment?.injuries, notes: "Lesiones" },
+                    { name: data.physicalAssessment?.medicalConditions, notes: "Condiciones Médicas" }
+                ].filter(p => p.name)
+            };
+
+            // Fix gender mapping if needed 
+            if (clientPayload.gender === 'MALE') clientPayload.gender = 'MALE';
+            if (clientPayload.gender === 'FEMALE') clientPayload.gender = 'FEMALE';
+            if (clientPayload.gender === 'OTHER') clientPayload.gender = 'OTHER';
+            // Assuming API handles case-insensitivity or standardizing:
+            // "male" -> "MALE"
+            if (clientPayload.gender === 'MALE' || clientPayload.gender === 'FEMALE') {
+                // ok
+            } else {
+                // map keys
+                if (data.personalData?.gender === 'male') clientPayload.gender = 'MALE';
+                else if (data.personalData?.gender === 'female') clientPayload.gender = 'FEMALE';
+                else clientPayload.gender = 'OTHER';
+            }
+
+
+            console.log("Creating Client...", clientPayload);
+            const clientResponse = await fetch('/api/clients', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(clientPayload)
+            });
+
+            if (!clientResponse.ok) {
+                const errorData = await clientResponse.json();
+                throw new Error(errorData.message || "Error al crear cliente");
+            }
+
+            const clientData = await clientResponse.json();
+            const clientId = clientData.id || clientData.data?.id; // Adjust based on actual API response structure
+
+            if (!clientId) throw new Error("No se recibió ID del cliente creado");
+
+            console.log("Client Created, ID:", clientId);
+
+            // 2. Crear Evaluación Inicial (Bioimpedancia + Fotos)
+            const evaluationFormData = new FormData();
+            evaluationFormData.append('clientId', clientId);
+            evaluationFormData.append('weight', String(data.personalData?.weight || 0));
+            evaluationFormData.append('date', new Date().toISOString());
+            evaluationFormData.append('type', 'INITIAL'); // Asumimos tipo inicial
+
+            // Bioimpedancia
+            if (data.bioimpedance) {
+                if (data.bioimpedance.bodyFat) evaluationFormData.append('fatPercentage', String(data.bioimpedance.bodyFat));
+                if (data.bioimpedance.muscleMass) evaluationFormData.append('muscleMass', String(data.bioimpedance.muscleMass));
+                if (data.bioimpedance.visceralFat) evaluationFormData.append('visceralFat', String(data.bioimpedance.visceralFat));
+                // Others if supported by API
+            }
+
+            // Fotos
+            // Asumimos orden: 0->Front, 1->Side, 2->Back
+            if (photos.length > 0) evaluationFormData.append('front', photos[0]);
+            if (photos.length > 1) evaluationFormData.append('side', photos[1]);
+            if (photos.length > 2) evaluationFormData.append('back', photos[2]);
+
+            console.log("Creating Initial Evaluation...");
+            const evalResponse = await fetch('/api/evaluations', {
+                method: 'POST',
+                body: evaluationFormData
+                // Content-Type header is automatic with FormData
+            });
+
+            if (!evalResponse.ok) {
+                console.warn("Cliente creado, pero falló la evaluación inicial.");
+                toast.warning("Cliente creado, pero hubo un error al guardar la evaluación inicial.");
+            } else {
+                toast.success("Cliente y evaluación inicial creados exitosamente");
+            }
+
+            resetWizard();
             router.push("/dashboard/clients");
-        } catch (error) {
-            toast.error("Error al crear cliente");
+
+        } catch (error: any) {
+            console.error(error);
+            toast.error(error.message || "Error inesperado al procesar solicitud");
         } finally {
             setIsSubmitting(false);
         }
@@ -141,7 +227,7 @@ export function StepReview() {
                     {isSubmitting ? (
                         <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Creando...
+                            Guardando...
                         </>
                     ) : (
                         <>

@@ -21,8 +21,8 @@
 - [x] Step 1: Datos Personales + Upload Avatar
 - [x] Step 2: Objetivos (Tarjetas seleccionables)
 - [x] Step 3: Patologías (Checklists condicionales)
-- [ ] Step 4: Bioimpedancia (Formulario numérico)
-- [ ] Step 5: Fotos (Upload múltiple con `react-dropzone`)
+- [x] Step 4: Bioimpedancia (Formulario numérico)
+- [x] Step 5: Fotos (Upload múltiple con `react-dropzone`)
 - [x] Step 6: Resumen y Confirmación
 - [x] Feedback visual de carga durante el guardado
 

@@ -50,15 +50,44 @@ export function AssessmentForm({ clientId, previousAssessment }: AssessmentFormP
         },
     });
 
-    function onSubmit(data: AssessmentFormValues) {
-        // Simulate API call
-        console.log("Submitting assessment:", data);
-        toast.success("Evaluación guardada exitosamente");
+    async function onSubmit(data: AssessmentFormValues) {
+        try {
+            const formData = new FormData();
+            formData.append("clientId", clientId);
+            formData.append("weight", data.weight);
+            formData.append("date", new Date().toISOString());
+            formData.append("type", "MONTHLY"); // Default to Monthly follow-up
 
-        // In a real app, we would invalidate queries or update context here
-        setTimeout(() => {
-            router.push(`/dashboard/clients/${clientId}/assessments`);
-        }, 1000);
+            if (data.bodyFatPercentage) formData.append("fatPercentage", data.bodyFatPercentage);
+            if (data.muscleMassPercentage) formData.append("muscleMass", data.muscleMassPercentage);
+            if (data.visceralFat) formData.append("visceralFat", data.visceralFat);
+            if (data.notes) formData.append("notes", data.notes);
+
+            // Photos are pending implementation in this form
+            // if (photos) ... 
+
+            console.log("Submitting assessment to API...");
+            const response = await fetch("/api/evaluations", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || "Error al guardar la evaluación");
+            }
+
+            toast.success("Evaluación guardada exitosamente");
+
+            // Invalidate queries or update context here
+            setTimeout(() => {
+                router.push(`/dashboard/clients/${clientId}/assessments`);
+                router.refresh();
+            }, 1000);
+        } catch (error: any) {
+            console.error(error);
+            toast.error(error.message || "Error al conectar con el servidor");
+        }
     }
 
     const renderComparison = (label: string, value?: number, unit: string = "") => {
