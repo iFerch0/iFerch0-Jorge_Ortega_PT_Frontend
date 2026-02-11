@@ -33,9 +33,9 @@
 ### Sprint 2: Dashboard y Perfiles
 - [x] Directorio de Clientes: Tabla/Grid con búsqueda (debounce)
 - [x] Componente `ClientCard` para listados
-- [ ] Página Perfil: Header con acciones rápidas
-- [ ] Tabs de navegación interna (Resumen, Historial, Fotos)
-- [ ] Vista de "Última Bioimpedancia" en el perfil
+- [x] Página Perfil: Header con acciones rápidas
+- [x] Tabs de navegación interna (Resumen, Historial, Fotos)
+- [x] Vista de "Última Bioimpedancia" en el perfil
 
 ### Sprint 3: Evaluaciones e Historial
 - [x] Formulario `NewEvaluation`: Versión simplificada del wizard
@@ -54,18 +54,18 @@
 - [x] Badges de tendencia (⬇️ 2kg, ⬆️ 1.5% masa)
 
 ### Sprint 5: Reportes PDF
-- [ ] Diseño de documento PDF con componentes React-PDF
-- [ ] UI de generación: Botón con estado loading
-- [ ] Modal de previsualización (opcional) o descarga directa
+- [x] Diseño de documento PDF con componentes React-PDF
+- [x] UI de generación: Botón con estado loading
+- [x] Modal de previsualización (opcional) o descarga directa
 
 ---
 
 ## Fase 4 — Pulido y Cliente (Semana 13–16)
 
 ### Sprint 6: Branding y Temas
-- [ ] Provider de temas dinámico (CSS Variables desde DB)
-- [ ] UI Configuración: Upload de logo y Color Picker
-- [ ] Aplicación de marca en Header y componentes clave
+- [x] Provider de temas dinámico (CSS Variables desde DB/LS)
+- [x] UI Configuración: Upload de logo y Color Picker
+- [x] Aplicación de marca en Header y componentes clave
 
 ### Sprint 7: Portal Cliente
 - [ ] Layout simplificado para clientes (Mobile-first)
