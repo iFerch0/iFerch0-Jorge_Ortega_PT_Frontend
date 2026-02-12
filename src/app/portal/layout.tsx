@@ -10,7 +10,7 @@ export default function PortalLayout({
         <div className="flex min-h-screen flex-col bg-muted/40 pb-16">
             {/* Simple Header */}
             <header className="sticky top-0 z-40 bg-background border-b px-4 py-3 flex items-center justify-center shadow-sm">
-                <span className="font-bold text-lg text-primary">GymProfile Pro</span>
+                <span className="font-bold text-lg text-primary">Jorge Ortega PT</span>
             </header>
 
             <main className="flex-1 p-4 md:p-6 max-w-md mx-auto w-full">

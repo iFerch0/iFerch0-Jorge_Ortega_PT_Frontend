@@ -1,38 +1,177 @@
 "use client";
 
-import { Dumbbell } from "lucide-react";
 import Link from "next/link";
+import { motion } from "framer-motion";
+import { Dumbbell, TrendingUp, Camera } from "lucide-react";
 
 interface AuthLayoutProps {
     children: React.ReactNode;
 }
 
+const highlights = [
+    { icon: TrendingUp, text: "Seguimiento de tu composición corporal con gráficas detalladas" },
+    { icon: Camera, text: "Fotos de progreso con comparativas antes y después" },
+    { icon: Dumbbell, text: "Evaluaciones periódicas personalizadas a tu medida" },
+];
+
 export default function AuthLayout({ children }: AuthLayoutProps) {
     return (
-        <div className="flex min-h-screen w-full flex-col bg-muted/40 lg:grid lg:grid-cols-2 lg:p-0">
-            <div className="flex flex-col items-center justify-center py-12">
-                <div className="mx-auto grid w-[350px] gap-6">
-                    <div className="grid gap-2 text-center">
-                        <Link href="/" className="mx-auto flex flex-col items-center gap-2 font-bold text-xl text-primary mb-4">
+        <div className="flex min-h-screen w-full">
+            {/* Left — Form side */}
+            <div className="relative flex flex-1 flex-col items-center justify-center px-6 py-12 bg-background">
+                {/* Subtle dot pattern */}
+                <div
+                    className="pointer-events-none absolute inset-0 opacity-[0.015]"
+                    style={{
+                        backgroundImage: `radial-gradient(circle, currentColor 1px, transparent 1px)`,
+                        backgroundSize: "24px 24px",
+                    }}
+                />
+
+                <div className="relative z-10 mx-auto w-full max-w-[400px] space-y-8">
+                    {/* Logo */}
+                    <motion.div
+                        initial={{ opacity: 0, y: -12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4 }}
+                        className="flex justify-center"
+                    >
+                        <Link href="/" className="inline-block">
                             <img
                                 src="https://res.cloudinary.com/duhsqdstl/image/upload/v1770782105/LOGO_CON_TRAZO_-_TRANSPARENTE_ytfdn6.png"
-                                alt="GymProfile Pro Logo"
-                                width={180}
-                                height={60}
-                                className="h-auto w-48"
+                                alt="Jorge Ortega PT"
+                                className="h-auto w-44"
                             />
                         </Link>
-                    </div>
-                    {children}
+                    </motion.div>
+
+                    {/* Form content */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.1 }}
+                    >
+                        {children}
+                    </motion.div>
                 </div>
+
+                {/* Bottom */}
+                <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.6 }}
+                    className="absolute bottom-6 text-[11px] text-muted-foreground/50"
+                >
+                    &copy; {new Date().getFullYear()} Jorge Ortega Personal Trainer
+                </motion.p>
             </div>
-            <div className="hidden bg-muted lg:block">
-                <div className="h-full w-full object-cover bg-primary/10 flex items-center justify-center">
-                    <img
-                        src="https://res.cloudinary.com/duhsqdstl/image/upload/v1770782105/LOGO_CON_TRAZO_-_TRANSPARENTE_ytfdn6.png"
-                        alt="GymProfile Pro Logo Large"
-                        className="h-auto w-96 opacity-20 filter grayscale"
-                    />
+
+            {/* Right — Brand panel */}
+            <div className="relative hidden overflow-hidden bg-[#09090b] lg:flex lg:w-[55%] xl:w-[50%]">
+                {/* Gradient mesh */}
+                <div className="pointer-events-none absolute inset-0">
+                    <div className="absolute -left-[20%] -top-[10%] h-[500px] w-[500px] rounded-full bg-primary/20 blur-[120px]" />
+                    <div className="absolute -right-[15%] top-[40%] h-[400px] w-[400px] rounded-full bg-violet-600/15 blur-[100px]" />
+                    <div className="absolute -bottom-[15%] left-[30%] h-[350px] w-[350px] rounded-full bg-emerald-600/10 blur-[90px]" />
+                </div>
+
+                {/* Noise */}
+                <div
+                    className="pointer-events-none absolute inset-0 opacity-[0.04]"
+                    style={{
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+                    }}
+                />
+
+                {/* Grid lines */}
+                <div className="pointer-events-none absolute inset-0 opacity-[0.04]">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                        <div
+                            key={`h-${i}`}
+                            className="absolute left-0 right-0 h-px bg-white"
+                            style={{ top: `${(i + 1) * 16.66}%` }}
+                        />
+                    ))}
+                    {Array.from({ length: 4 }).map((_, i) => (
+                        <div
+                            key={`v-${i}`}
+                            className="absolute top-0 bottom-0 w-px bg-white"
+                            style={{ left: `${(i + 1) * 25}%` }}
+                        />
+                    ))}
+                </div>
+
+                {/* Content */}
+                <div className="relative z-10 flex flex-col justify-between p-12 xl:p-16">
+                    <div />
+
+                    {/* Center */}
+                    <div className="space-y-8">
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.6, delay: 0.3 }}
+                        >
+                            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-white/30">
+                                Personal Trainer
+                            </p>
+                            <h2 className="text-3xl font-bold leading-[1.15] tracking-tight text-white xl:text-4xl">
+                                Tu progreso,{" "}
+                                <span className="bg-gradient-to-r from-primary via-violet-400 to-emerald-400 bg-clip-text text-transparent">
+                                    visible y medible.
+                                </span>
+                            </h2>
+                            <p className="mt-4 max-w-md text-sm leading-relaxed text-white/40">
+                                Accede a tus evaluaciones de composición corporal, fotos de progreso y métricas personalizadas. Todo tu proceso de entrenamiento en un solo lugar.
+                            </p>
+                        </motion.div>
+
+                        {/* Highlights */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 16 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.5 }}
+                            className="space-y-3"
+                        >
+                            {highlights.map((item, i) => (
+                                <motion.div
+                                    key={i}
+                                    initial={{ opacity: 0, x: 16 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.6 + i * 0.1 }}
+                                    className="flex items-center gap-3 rounded-lg border border-white/[0.06] bg-white/[0.03] px-4 py-3 backdrop-blur-sm"
+                                >
+                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white/[0.06]">
+                                        <item.icon className="h-4 w-4 text-white/50" />
+                                    </div>
+                                    <p className="text-sm text-white/50">{item.text}</p>
+                                </motion.div>
+                            ))}
+                        </motion.div>
+                    </div>
+
+                    {/* Bottom — trainer quote */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.9, duration: 0.5 }}
+                        className="mt-12 rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 backdrop-blur-sm"
+                    >
+                        <div className="flex items-start gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/40 to-violet-500/40 text-xs font-bold text-white">
+                                JO
+                            </div>
+                            <div>
+                                <p className="text-sm leading-relaxed text-white/50 italic">
+                                    &ldquo;Lo que no se mide, no se mejora. Esta plataforma te permite ver tu evolución real, sesión a sesión.&rdquo;
+                                </p>
+                                <p className="mt-2 text-xs text-white/25">
+                                    <span className="font-medium text-white/40">Jorge Ortega</span>
+                                    {" "}&middot;{" "}Personal Trainer Certificado
+                                </p>
+                            </div>
+                        </div>
+                    </motion.div>
                 </div>
             </div>
         </div>

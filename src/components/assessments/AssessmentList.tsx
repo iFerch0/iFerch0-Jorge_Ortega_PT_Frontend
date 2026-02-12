@@ -1,14 +1,15 @@
+import Link from "next/link";
 import { Assessment } from "@/lib/data/mock-assessments";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Weight, Activity, CalendarDays } from "lucide-react";
+import { CalendarDays, ChevronRight, TrendingDown, TrendingUp } from "lucide-react";
 
 interface AssessmentListProps {
     assessments: Assessment[];
+    clientId?: string;
 }
 
-export function AssessmentList({ assessments }: AssessmentListProps) {
-    // Sort assessments by date descending
+export function AssessmentList({ assessments, clientId }: AssessmentListProps) {
     const sortedAssessments = [...assessments].sort(
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
@@ -21,75 +22,149 @@ export function AssessmentList({ assessments }: AssessmentListProps) {
         );
     }
 
-    return (
-        <div className="space-y-4">
-            {sortedAssessments.map((assessment, index) => {
-                const previousAssessment = sortedAssessments[index + 1];
-                const weightDiff = previousAssessment
-                    ? assessment.weight - previousAssessment.weight
-                    : 0;
+    const resolvedClientId = clientId || sortedAssessments[0]?.clientId;
 
-                return (
-                    <Card key={assessment.id}>
-                        <CardHeader className="pb-2">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                                    <span className="font-semibold">
-                                        {new Date(assessment.date).toLocaleDateString()}
-                                    </span>
-                                </div>
-                                {index === 0 && <Badge>Más reciente</Badge>}
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                                <div className="flex flex-col">
-                                    <span className="text-sm text-muted-foreground">Peso</span>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-lg font-bold">
-                                            {assessment.weight} kg
-                                        </span>
-                                        {previousAssessment && (
-                                            <Badge
-                                                variant={weightDiff <= 0 ? "default" : "destructive"} // Greenish if loss (usually good for weight loss goal) - adapt based on goal logic later
-                                                className={`text-xs ${weightDiff > 0
-                                                    ? "bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400"
-                                                    : "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400"
-                                                    }`}
-                                            >
-                                                {weightDiff > 0 ? "+" : ""}
-                                                {weightDiff.toFixed(1)} kg
-                                            </Badge>
+    return (
+        <div className="space-y-3">
+            {/* Timeline line */}
+            <div className="relative space-y-3">
+                {sortedAssessments.map((assessment, index) => {
+                    const previousAssessment = sortedAssessments[index + 1];
+                    const weightDiff = previousAssessment
+                        ? assessment.weight - previousAssessment.weight
+                        : 0;
+                    const fatDiff =
+                        previousAssessment?.bodyFatPercentage && assessment.bodyFatPercentage
+                            ? assessment.bodyFatPercentage - previousAssessment.bodyFatPercentage
+                            : null;
+                    const muscleDiff =
+                        previousAssessment?.muscleMassPercentage && assessment.muscleMassPercentage
+                            ? assessment.muscleMassPercentage - previousAssessment.muscleMassPercentage
+                            : null;
+
+                    return (
+                        <Link
+                            key={assessment.id}
+                            href={`/dashboard/clients/${resolvedClientId}/assessments/${assessment.id}`}
+                        >
+                            <Card className="group relative overflow-hidden transition-colors hover:border-primary/30 hover:bg-muted/30">
+                                {/* Timeline dot */}
+                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary/60 to-primary/10 opacity-0 transition-opacity group-hover:opacity-100" />
+
+                                <CardHeader className="pb-2">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex h-7 w-7 items-center justify-center rounded-full border bg-background text-xs font-medium text-muted-foreground">
+                                                {sortedAssessments.length - index}
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
+                                                <span className="text-sm font-semibold">
+                                                    {new Date(assessment.date).toLocaleDateString("es-CO", {
+                                                        day: "numeric",
+                                                        month: "long",
+                                                        year: "numeric",
+                                                    })}
+                                                </span>
+                                            </div>
+                                            {index === 0 && (
+                                                <Badge className="text-[10px]">Más reciente</Badge>
+                                            )}
+                                        </div>
+                                        <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-xs text-muted-foreground">Peso</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-lg font-bold tabular-nums">
+                                                    {assessment.weight} kg
+                                                </span>
+                                                {previousAssessment && weightDiff !== 0 && (
+                                                    <span
+                                                        className={`inline-flex items-center gap-0.5 text-xs font-medium ${
+                                                            weightDiff < 0
+                                                                ? "text-emerald-600 dark:text-emerald-400"
+                                                                : "text-red-500 dark:text-red-400"
+                                                        }`}
+                                                    >
+                                                        {weightDiff < 0 ? (
+                                                            <TrendingDown className="h-3 w-3" />
+                                                        ) : (
+                                                            <TrendingUp className="h-3 w-3" />
+                                                        )}
+                                                        {weightDiff > 0 ? "+" : ""}
+                                                        {weightDiff.toFixed(1)}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        {assessment.bodyFatPercentage !== undefined && (
+                                            <div className="flex flex-col">
+                                                <span className="text-xs text-muted-foreground">% Grasa</span>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-lg font-bold tabular-nums">
+                                                        {assessment.bodyFatPercentage}%
+                                                    </span>
+                                                    {fatDiff !== null && fatDiff !== 0 && (
+                                                        <span
+                                                            className={`text-xs font-medium ${
+                                                                fatDiff < 0
+                                                                    ? "text-emerald-600 dark:text-emerald-400"
+                                                                    : "text-red-500 dark:text-red-400"
+                                                            }`}
+                                                        >
+                                                            {fatDiff > 0 ? "+" : ""}
+                                                            {fatDiff.toFixed(1)}%
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {assessment.muscleMassPercentage !== undefined && (
+                                            <div className="flex flex-col">
+                                                <span className="text-xs text-muted-foreground">% Músculo</span>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-lg font-bold tabular-nums">
+                                                        {assessment.muscleMassPercentage}%
+                                                    </span>
+                                                    {muscleDiff !== null && muscleDiff !== 0 && (
+                                                        <span
+                                                            className={`text-xs font-medium ${
+                                                                muscleDiff > 0
+                                                                    ? "text-emerald-600 dark:text-emerald-400"
+                                                                    : "text-red-500 dark:text-red-400"
+                                                            }`}
+                                                        >
+                                                            {muscleDiff > 0 ? "+" : ""}
+                                                            {muscleDiff.toFixed(1)}%
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {assessment.visceralFat !== undefined && (
+                                            <div className="flex flex-col">
+                                                <span className="text-xs text-muted-foreground">Grasa Visceral</span>
+                                                <span className="text-lg font-bold tabular-nums">
+                                                    {assessment.visceralFat}
+                                                </span>
+                                            </div>
                                         )}
                                     </div>
-                                </div>
-                                {assessment.bodyFatPercentage && (
-                                    <div className="flex flex-col">
-                                        <span className="text-sm text-muted-foreground">% Grasa</span>
-                                        <span className="text-lg font-bold">
-                                            {assessment.bodyFatPercentage}%
-                                        </span>
-                                    </div>
-                                )}
-                                {assessment.muscleMassPercentage && (
-                                    <div className="flex flex-col">
-                                        <span className="text-sm text-muted-foreground">% Músculo</span>
-                                        <span className="text-lg font-bold">
-                                            {assessment.muscleMassPercentage}%
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-                            {assessment.notes && (
-                                <div className="mt-4 rounded-md bg-muted p-3 text-sm italic text-muted-foreground">
-                                    "{assessment.notes}"
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                );
-            })}
+                                    {assessment.notes && (
+                                        <div className="mt-3 rounded-md bg-muted p-2.5 text-xs text-muted-foreground line-clamp-2">
+                                            {assessment.notes}
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </Link>
+                    );
+                })}
+            </div>
         </div>
     );
 }

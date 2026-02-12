@@ -99,9 +99,11 @@ export default async function ClientLayout({ children, params }: ClientLayoutPro
                                 Evaluaciones
                             </Link>
                         </TabsTrigger>
-                        <TabsTrigger value="photos" disabled>
-                            <Camera className="mr-2 h-4 w-4" />
-                            Fotos
+                        <TabsTrigger value="photos" asChild>
+                            <Link href={`/dashboard/clients/${client.id}/photos`}>
+                                <Camera className="mr-2 h-4 w-4" />
+                                Fotos
+                            </Link>
                         </TabsTrigger>
                     </TabsList>
                     <div className="mt-6">

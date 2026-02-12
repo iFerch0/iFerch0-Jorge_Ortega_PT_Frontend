@@ -40,7 +40,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             <Link href="/" className="flex items-center gap-2 font-semibold text-primary">
               <img
                 src="https://res.cloudinary.com/duhsqdstl/image/upload/v1770782105/LOGO_CON_TRAZO_-_TRANSPARENTE_ytfdn6.png"
-                alt="GymProfile Pro"
+                alt="Jorge Ortega PT"
                 className="h-8 w-auto"
               />
             </Link>
@@ -86,10 +86,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 >
                   <img
                     src="https://res.cloudinary.com/duhsqdstl/image/upload/v1770782105/LOGO_CON_TRAZO_-_TRANSPARENTE_ytfdn6.png"
-                    alt="GymProfile Pro"
+                    alt="Jorge Ortega PT"
                     className="h-8 w-auto"
                   />
-                  <span className="sr-only">GymProfile Pro</span>
+                  <span className="sr-only">Jorge Ortega PT</span>
                 </Link>
                 {navigation.map((item) => (
                   <Link

@@ -97,8 +97,8 @@ export const ClientReportPDF = ({
     <Page size="A4" style={styles.page}>
       <View style={styles.header}>
         <View>
-            <Text style={styles.logo}>GymProfile Pro</Text>
-            <Text style={{ fontSize: 10, color: "#6B7280" }}>Entrenamiento Personalizado</Text>
+            <Text style={styles.logo}>Jorge Ortega PT</Text>
+            <Text style={{ fontSize: 10, color: "#6B7280" }}>Personal Trainer</Text>
         </View>
         <Text style={{ fontSize: 10, color: "#9CA3AF" }}>{new Date().toLocaleDateString()}</Text>
       </View>
@@ -160,7 +160,7 @@ export const ClientReportPDF = ({
       </View>
       
       <Text style={{ position: "absolute", bottom: 30, left: 30, right: 30, textAlign: "center", fontSize: 10, color: "#9CA3AF" }}>
-        Generado automáticamente por GymProfile Pro
+        Generado por Jorge Ortega Personal Trainer
       </Text>
     </Page>
   </Document>
