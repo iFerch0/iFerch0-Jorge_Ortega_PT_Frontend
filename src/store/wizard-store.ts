@@ -9,16 +9,18 @@ import {
     Availability,
 } from "@/lib/validators/wizard-schema";
 
+export type WizardPhotos = { front?: File; side?: File; back?: File };
+
 interface WizardState {
     currentStep: number;
     data: Partial<WizardData>;
-    photos: File[];
+    photos: WizardPhotos;
     setPersonalData: (data: PersonalData) => void;
     setObjectives: (data: Objectives) => void;
     setPhysicalAssessment: (data: PhysicalAssessment) => void;
     setBioimpedance: (data: Bioimpedance) => void;
     setAvailability: (data: Availability) => void;
-    setPhotos: (files: File[]) => void;
+    setPhotos: (photos: WizardPhotos) => void;
     nextStep: () => void;
     prevStep: () => void;
     resetWizard: () => void;
@@ -38,7 +40,7 @@ export const useWizardStore = create<WizardState>()(
         (set) => ({
             currentStep: 0,
             data: initialState,
-            photos: [],
+            photos: {},
             setPersonalData: (personalData) =>
                 set((state) => ({ data: { ...state.data, personalData } })),
             setObjectives: (objectives) =>
@@ -49,12 +51,12 @@ export const useWizardStore = create<WizardState>()(
                 set((state) => ({ data: { ...state.data, bioimpedance } })),
             setAvailability: (availability) =>
                 set((state) => ({ data: { ...state.data, availability } })),
-            setPhotos: (files) => set({ photos: files }),
+            setPhotos: (photos) => set({ photos }),
 
             nextStep: () => set((state) => ({ currentStep: state.currentStep + 1 })),
             prevStep: () => set((state) => ({ currentStep: Math.max(0, state.currentStep - 1) })),
             setStep: (step) => set({ currentStep: step }),
-            resetWizard: () => set({ currentStep: 0, data: initialState, photos: [] }),
+            resetWizard: () => set({ currentStep: 0, data: initialState, photos: {} }),
         }),
         {
             name: "wizard-storage",

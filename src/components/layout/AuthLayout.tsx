@@ -19,9 +19,15 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         <div className="flex min-h-screen w-full">
             {/* Left — Form side */}
             <div className="relative flex flex-1 flex-col items-center justify-center px-6 py-12 bg-background">
+                {/* Ambient glow — warm presence that connects with the brand panel */}
+                <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                    <div className="absolute -top-[30%] -right-[20%] h-[500px] w-[500px] rounded-full bg-primary/[0.04] blur-[120px]" />
+                    <div className="absolute -bottom-[20%] -left-[15%] h-[400px] w-[400px] rounded-full bg-primary/[0.03] blur-[100px]" />
+                </div>
+
                 {/* Subtle dot pattern */}
                 <div
-                    className="pointer-events-none absolute inset-0 opacity-[0.015]"
+                    className="pointer-events-none absolute inset-0 opacity-[0.02]"
                     style={{
                         backgroundImage: `radial-gradient(circle, currentColor 1px, transparent 1px)`,
                         backgroundSize: "24px 24px",
@@ -44,6 +50,16 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
                             />
                         </Link>
                     </motion.div>
+
+                    {/* Mobile-only brand tagline */}
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.2, duration: 0.4 }}
+                        className="text-center text-xs text-muted-foreground/60 lg:hidden"
+                    >
+                        Tu progreso de entrenamiento, medible y visible.
+                    </motion.p>
 
                     {/* Form content */}
                     <motion.div
@@ -70,9 +86,9 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             <div className="relative hidden overflow-hidden bg-[#09090b] lg:flex lg:w-[55%] xl:w-[50%]">
                 {/* Gradient mesh */}
                 <div className="pointer-events-none absolute inset-0">
-                    <div className="absolute -left-[20%] -top-[10%] h-[500px] w-[500px] rounded-full bg-primary/20 blur-[120px]" />
-                    <div className="absolute -right-[15%] top-[40%] h-[400px] w-[400px] rounded-full bg-violet-600/15 blur-[100px]" />
-                    <div className="absolute -bottom-[15%] left-[30%] h-[350px] w-[350px] rounded-full bg-emerald-600/10 blur-[90px]" />
+                    <div className="absolute -left-[20%] -top-[10%] h-[500px] w-[500px] rounded-full bg-amber-500/15 blur-[120px]" />
+                    <div className="absolute -right-[15%] top-[40%] h-[400px] w-[400px] rounded-full bg-teal-500/10 blur-[100px]" />
+                    <div className="absolute -bottom-[15%] left-[30%] h-[350px] w-[350px] rounded-full bg-amber-600/8 blur-[90px]" />
                 </div>
 
                 {/* Noise */}
@@ -115,9 +131,9 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
                             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-white/30">
                                 Personal Trainer
                             </p>
-                            <h2 className="text-3xl font-bold leading-[1.15] tracking-tight text-white xl:text-4xl">
+                            <h2 className="font-display text-3xl font-bold leading-[1.15] tracking-tight text-white xl:text-4xl">
                                 Tu progreso,{" "}
-                                <span className="bg-gradient-to-r from-primary via-violet-400 to-emerald-400 bg-clip-text text-transparent">
+                                <span className="bg-gradient-to-r from-amber-300 via-amber-400 to-teal-400 bg-clip-text text-transparent">
                                     visible y medible.
                                 </span>
                             </h2>
@@ -141,8 +157,8 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
                                     transition={{ delay: 0.6 + i * 0.1 }}
                                     className="flex items-center gap-3 rounded-lg border border-white/[0.06] bg-white/[0.03] px-4 py-3 backdrop-blur-sm"
                                 >
-                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white/[0.06]">
-                                        <item.icon className="h-4 w-4 text-white/50" />
+                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-amber-500/10">
+                                        <item.icon className="h-4 w-4 text-amber-400/60" />
                                     </div>
                                     <p className="text-sm text-white/50">{item.text}</p>
                                 </motion.div>
@@ -158,7 +174,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
                         className="mt-12 rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 backdrop-blur-sm"
                     >
                         <div className="flex items-start gap-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/40 to-violet-500/40 text-xs font-bold text-white">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-500/40 to-teal-500/30 text-xs font-bold text-white">
                                 JO
                             </div>
                             <div>

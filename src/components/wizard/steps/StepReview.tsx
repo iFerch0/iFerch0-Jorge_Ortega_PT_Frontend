@@ -6,8 +6,9 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { WizardLayout } from "../WizardLayout";
 import { Loader2, CheckCircle2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { User, Target, Activity, Calendar, Scale, Camera } from "lucide-react";
+import Image from "next/image";
 
 export function StepReview() {
     const { data, photos, resetWizard, prevStep } = useWizardStore();
@@ -77,23 +78,29 @@ export function StepReview() {
             // 2. Crear Evaluación Inicial (Bioimpedancia + Fotos)
             const evaluationFormData = new FormData();
             evaluationFormData.append('clientId', clientId);
-            evaluationFormData.append('weight', String(data.personalData?.weight || 0));
+            evaluationFormData.append('weight', String(data.bioimpedance?.weight || data.personalData?.weight || 0));
             evaluationFormData.append('date', new Date().toISOString());
-            evaluationFormData.append('type', 'INITIAL'); // Asumimos tipo inicial
 
             // Bioimpedancia
             if (data.bioimpedance) {
-                if (data.bioimpedance.bodyFat) evaluationFormData.append('fatPercentage', String(data.bioimpedance.bodyFat));
+                if (data.bioimpedance.bmi) evaluationFormData.append('bmi', String(data.bioimpedance.bmi));
+                if (data.bioimpedance.bodyFat) evaluationFormData.append('bodyFat', String(data.bioimpedance.bodyFat));
                 if (data.bioimpedance.muscleMass) evaluationFormData.append('muscleMass', String(data.bioimpedance.muscleMass));
                 if (data.bioimpedance.visceralFat) evaluationFormData.append('visceralFat', String(data.bioimpedance.visceralFat));
-                // Others if supported by API
+                if (data.bioimpedance.bodyWater) evaluationFormData.append('bodyWater', String(data.bioimpedance.bodyWater));
+                if (data.bioimpedance.skeletalMuscleMass) evaluationFormData.append('skeletalMuscleMass', String(data.bioimpedance.skeletalMuscleMass));
+                if (data.bioimpedance.basalMetabolism) evaluationFormData.append('basalMetabolism', String(data.bioimpedance.basalMetabolism));
+
+                // Add Bioimpedance Ticket Image if exists
+                if (data.bioimpedance.bioimpedanceImage) {
+                    evaluationFormData.append('bioimpedance', data.bioimpedance.bioimpedanceImage);
+                }
             }
 
             // Fotos
-            // Asumimos orden: 0->Front, 1->Side, 2->Back
-            if (photos.length > 0) evaluationFormData.append('front', photos[0]);
-            if (photos.length > 1) evaluationFormData.append('side', photos[1]);
-            if (photos.length > 2) evaluationFormData.append('back', photos[2]);
+            if (photos.front) evaluationFormData.append('front', photos.front);
+            if (photos.side) evaluationFormData.append('side', photos.side);
+            if (photos.back) evaluationFormData.append('back', photos.back);
 
             console.log("Creating Initial Evaluation...");
             const evalResponse = await fetch('/api/evaluations', {
@@ -126,10 +133,26 @@ export function StepReview() {
         return list.join(", ");
     };
 
-    const formatFileList = (files?: File[]) => {
-        if (!files || files.length === 0) return "Sin fotos";
-        return `${files.length} archivo(s) seleccionados`;
-    };
+    const photoLabels = { front: "Frontal", side: "Lateral", back: "Espalda" } as const;
+    const hasAnyPhoto = photos.front || photos.side || photos.back;
+
+    // Build preview URLs for photos
+    const [photoPreviews, setPhotoPreviews] = useState<Record<string, string | null>>({
+        front: null,
+        side: null,
+        back: null,
+    });
+
+    useEffect(() => {
+        const urls: Record<string, string | null> = { front: null, side: null, back: null };
+        (["front", "side", "back"] as const).forEach((key) => {
+            if (photos[key]) urls[key] = URL.createObjectURL(photos[key]);
+        });
+        setPhotoPreviews(urls);
+        return () => {
+            Object.values(urls).forEach((url) => { if (url) URL.revokeObjectURL(url); });
+        };
+    }, [photos]);
 
     return (
         <WizardLayout
@@ -186,11 +209,14 @@ export function StepReview() {
                         <h3>Bioimpedancia</h3>
                     </div>
                     <div className="text-sm grid gap-1 text-muted-foreground">
-                        <p><span className="font-medium text-foreground">Grasa:</span> {data.bioimpedance?.bodyFat ? `${data.bioimpedance.bodyFat}%` : "N/A"}</p>
-                        <p><span className="font-medium text-foreground">Músculo:</span> {data.bioimpedance?.muscleMass ? `${data.bioimpedance.muscleMass}%` : "N/A"}</p>
-                        <p><span className="font-medium text-foreground">Visceral:</span> {data.bioimpedance?.visceralFat || "N/A"}</p>
-                        <p><span className="font-medium text-foreground">Cintura:</span> {data.bioimpedance?.waist ? `${data.bioimpedance.waist} cm` : "N/A"}</p>
-                        <p><span className="font-medium text-foreground">Cadera:</span> {data.bioimpedance?.hip ? `${data.bioimpedance.hip} cm` : "N/A"}</p>
+                        <p><span className="font-medium text-foreground">IMC:</span> {data.bioimpedance?.bmi || "N/A"}</p>
+                        <p><span className="font-medium text-foreground">Grasa Corp:</span> {data.bioimpedance?.bodyFat ? `${data.bioimpedance.bodyFat}%` : "N/A"}</p>
+                        <p><span className="font-medium text-foreground">Masa Musc:</span> {data.bioimpedance?.muscleMass ? `${data.bioimpedance.muscleMass}kg` : "N/A"}</p>
+                        <p><span className="font-medium text-foreground">Grasa Visc:</span> {data.bioimpedance?.visceralFat || "N/A"}</p>
+                        <p><span className="font-medium text-foreground">Agua Corp:</span> {data.bioimpedance?.bodyWater ? `${data.bioimpedance.bodyWater}%` : "N/A"}</p>
+                        <p><span className="font-medium text-foreground">M.M.E:</span> {data.bioimpedance?.skeletalMuscleMass ? `${data.bioimpedance.skeletalMuscleMass}kg` : "N/A"}</p>
+                        <p><span className="font-medium text-foreground">Metab. Basal:</span> {data.bioimpedance?.basalMetabolism ? `${data.bioimpedance.basalMetabolism}kcal` : "N/A"}</p>
+                        <p><span className="font-medium text-foreground">Ticket Imagen:</span> {data.bioimpedance?.bioimpedanceImage ? "Sí (Adjunta)" : "No"}</p>
                     </div>
                 </div>
 
@@ -200,9 +226,26 @@ export function StepReview() {
                         <Camera className="h-5 w-5" />
                         <h3>Fotos</h3>
                     </div>
-                    <div className="text-sm grid gap-1 text-muted-foreground">
-                        <p><span className="font-medium text-foreground">Archivos:</span> {formatFileList(photos)}</p>
-                    </div>
+                    {hasAnyPhoto ? (
+                        <div className="grid grid-cols-3 gap-3">
+                            {(["front", "side", "back"] as const).map((key) => (
+                                <div key={key} className="flex flex-col items-center gap-1">
+                                    <span className="text-xs font-medium text-foreground">{photoLabels[key]}</span>
+                                    {photoPreviews[key] ? (
+                                        <div className="relative aspect-[3/4] w-full rounded-md overflow-hidden border">
+                                            <Image src={photoPreviews[key]!} alt={photoLabels[key]} fill className="object-cover" />
+                                        </div>
+                                    ) : (
+                                        <div className="aspect-[3/4] w-full rounded-md border flex items-center justify-center">
+                                            <span className="text-xs text-muted-foreground">Sin foto</span>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">Sin fotos adjuntas</p>
+                    )}
                 </div>
 
                 {/* Section: Availability */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Loader2, Upload, Building2, User, Palette } from "lucide-react";
@@ -11,12 +11,14 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ThemeCustomizer } from "@/components/settings/ThemeCustomizer";
+import { users, gym as gymApi } from "@/lib/api";
+import type { Gym } from "@/types/api";
 
 export default function SettingsPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h3 className="text-lg font-medium">Configuración</h3>
+                <h1 className="font-display text-2xl font-bold tracking-tight">Configuración</h1>
                 <p className="text-sm text-muted-foreground">
                     Administra tu perfil, el branding de tu gimnasio y la apariencia.
                 </p>
@@ -56,14 +58,26 @@ export default function SettingsPage() {
 
 function TrainerProfileForm() {
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-    const { register, handleSubmit, formState: { isSubmitting } } = useForm({
+    const [loading, setLoading] = useState(true);
+    const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm({
         defaultValues: {
-            firstName: "Jorge",
-            lastName: "Ortega",
-            email: "jorge.ortega@gmail.com",
-            phone: "+57 300 000 0000",
+            name: "",
+            email: "",
         },
     });
+
+    useEffect(() => {
+        users.getProfile()
+            .then((profile) => {
+                reset({
+                    name: profile.name || "",
+                    email: profile.email || "",
+                });
+                if (profile.image) setAvatarPreview(profile.image);
+            })
+            .catch(() => {})
+            .finally(() => setLoading(false));
+    }, [reset]);
 
     function onAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
@@ -72,9 +86,23 @@ function TrainerProfileForm() {
         }
     }
 
-    async function onSubmit(data: Record<string, string>) {
-        await new Promise((r) => setTimeout(r, 1000));
-        toast.success("Perfil actualizado correctamente");
+    async function onSubmit(data: { name: string; email: string }) {
+        try {
+            await users.updateProfile({ name: data.name });
+            toast.success("Perfil actualizado correctamente");
+        } catch {
+            toast.error("Error al actualizar perfil");
+        }
+    }
+
+    if (loading) {
+        return (
+            <Card>
+                <CardContent className="flex items-center justify-center py-12">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
     }
 
     return (
@@ -87,7 +115,6 @@ function TrainerProfileForm() {
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                    {/* Avatar */}
                     <div className="flex items-center gap-4">
                         <Avatar className="h-20 w-20 border-2">
                             <AvatarImage src={avatarPreview || ""} />
@@ -116,22 +143,13 @@ function TrainerProfileForm() {
 
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
-                            <Label htmlFor="firstName">Nombre</Label>
-                            <Input id="firstName" {...register("firstName")} />
+                            <Label htmlFor="name">Nombre</Label>
+                            <Input id="name" {...register("name")} />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="lastName">Apellido</Label>
-                            <Input id="lastName" {...register("lastName")} />
-                        </div>
-                    </div>
-                    <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
                             <Label htmlFor="email">Email</Label>
-                            <Input id="email" type="email" {...register("email")} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="phone">Teléfono</Label>
-                            <Input id="phone" {...register("phone")} />
+                            <Input id="email" type="email" {...register("email")} disabled />
+                            <p className="text-xs text-muted-foreground">El email no se puede cambiar.</p>
                         </div>
                     </div>
                     <div className="flex justify-end">
@@ -149,11 +167,25 @@ function TrainerProfileForm() {
 function GymConfigForm() {
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
     const [primaryColor, setPrimaryColor] = useState("#2563eb");
-    const { register, handleSubmit, formState: { isSubmitting } } = useForm({
+    const [loading, setLoading] = useState(true);
+    const { register, handleSubmit, reset, watch, formState: { isSubmitting } } = useForm({
         defaultValues: {
-            gymName: "Jorge Ortega Personal Trainer",
+            gymName: "",
         },
     });
+
+    const gymName = watch("gymName");
+
+    useEffect(() => {
+        gymApi.get()
+            .then((gymData) => {
+                reset({ gymName: gymData.name || "" });
+                if (gymData.logo) setLogoPreview(gymData.logo);
+                if (gymData.primaryColor) setPrimaryColor(gymData.primaryColor);
+            })
+            .catch(() => {})
+            .finally(() => setLoading(false));
+    }, [reset]);
 
     function onLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
@@ -162,9 +194,26 @@ function GymConfigForm() {
         }
     }
 
-    async function onSubmit(data: Record<string, string>) {
-        await new Promise((r) => setTimeout(r, 1000));
-        toast.success("Configuración del gimnasio actualizada");
+    async function onSubmit(data: { gymName: string }) {
+        try {
+            await gymApi.update({
+                name: data.gymName,
+                primaryColor,
+            });
+            toast.success("Configuración del gimnasio actualizada");
+        } catch {
+            toast.error("Error al actualizar configuración");
+        }
+    }
+
+    if (loading) {
+        return (
+            <Card>
+                <CardContent className="flex items-center justify-center py-12">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
     }
 
     return (
@@ -177,23 +226,14 @@ function GymConfigForm() {
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                    {/* Logo upload */}
                     <div className="space-y-2">
                         <Label>Logo del Gimnasio</Label>
                         <div className="flex items-center gap-4">
                             <div className="flex h-24 w-24 items-center justify-center rounded-lg border-2 border-dashed bg-muted/50 overflow-hidden">
                                 {logoPreview ? (
-                                    <img
-                                        src={logoPreview}
-                                        alt="Logo preview"
-                                        className="h-full w-full object-contain p-1"
-                                    />
+                                    <img src={logoPreview} alt="Logo preview" className="h-full w-full object-contain p-1" />
                                 ) : (
-                                    <img
-                                        src="https://res.cloudinary.com/duhsqdstl/image/upload/v1770782105/LOGO_CON_TRAZO_-_TRANSPARENTE_ytfdn6.png"
-                                        alt="Logo actual"
-                                        className="h-full w-full object-contain p-1"
-                                    />
+                                    <Building2 className="h-8 w-8 text-muted-foreground/40" />
                                 )}
                             </div>
                             <div>
@@ -218,13 +258,11 @@ function GymConfigForm() {
                         </div>
                     </div>
 
-                    {/* Gym name */}
                     <div className="space-y-2">
                         <Label htmlFor="gymName">Nombre del Gimnasio</Label>
                         <Input id="gymName" {...register("gymName")} />
                     </div>
 
-                    {/* Primary color */}
                     <div className="space-y-2">
                         <Label>Color Primario</Label>
                         <div className="flex items-center gap-3">
@@ -252,7 +290,6 @@ function GymConfigForm() {
                         </p>
                     </div>
 
-                    {/* Preview */}
                     <div className="rounded-lg border bg-muted/30 p-4">
                         <p className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                             Vista previa
@@ -262,16 +299,11 @@ function GymConfigForm() {
                                 {logoPreview ? (
                                     <img src={logoPreview} alt="" className="h-full w-full object-contain" />
                                 ) : (
-                                    <img
-                                        src="https://res.cloudinary.com/duhsqdstl/image/upload/v1770782105/LOGO_CON_TRAZO_-_TRANSPARENTE_ytfdn6.png"
-                                        alt=""
-                                        className="h-full w-full object-contain"
-                                    />
+                                    <Building2 className="h-5 w-5 text-muted-foreground" />
                                 )}
                             </div>
                             <span className="font-semibold" style={{ color: primaryColor }}>
-                                {/* Display gym name from form would need watch, so just show text */}
-                                Jorge Ortega PT
+                                {gymName || "Tu Gimnasio"}
                             </span>
                         </div>
                     </div>

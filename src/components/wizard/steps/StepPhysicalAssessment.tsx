@@ -98,13 +98,6 @@ export function StepPhysicalAssessment() {
                         )}
                     />
 
-                    {/* Setup for Photo Upload would go here in future iteration */}
-                    <div className="rounded-lg border border-dashed p-8 text-center bg-muted/50">
-                        <p className="text-sm text-muted-foreground">
-                            Módulo de carga de fotos (Frontal, Perfil, Espalda) pendiente de integración.
-                        </p>
-                    </div>
-
                     <div className="flex justify-between">
                         <Button type="button" variant="outline" onClick={prevStep}>
                             Atrás
