@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { FileDown, Loader2 } from "lucide-react";
-import { Assessment } from "@/lib/data/mock-assessments";
+import type { Evaluation } from "@/types/api";
 import { ClientReportPDF } from "@/components/reports/ClientReportPDF";
 
 // Dynamically import PDFDownloadLink to avoid SSR issues
@@ -24,7 +24,7 @@ interface PDFDownloadButtonProps {
     clientName: string;
     clientEmail: string;
     goal: string;
-    assessments: Assessment[];
+    assessments: Evaluation[];
 }
 
 export function PDFDownloadButton({

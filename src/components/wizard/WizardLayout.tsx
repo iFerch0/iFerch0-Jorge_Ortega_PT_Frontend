@@ -83,7 +83,7 @@ export function WizardLayout({
             {/* Content */}
             <div className="space-y-6">
                 <div className="text-center md:text-left">
-                    <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
+                    <h2 className="font-display text-2xl font-bold tracking-tight">{title}</h2>
                     <p className="text-muted-foreground">{description}</p>
                 </div>
                 <div className="rounded-lg border bg-card p-6 shadow-sm md:p-8">

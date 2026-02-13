@@ -22,9 +22,9 @@ const fadeUp = {
 };
 
 const benefits = [
-  "Evaluaciones de bioimpedancia registradas en cada sesión",
-  "Gráficas de evolución de peso y composición corporal",
-  "Fotos de progreso con comparativa antes y después",
+  "Evaluaciones de bioimpedancia registradas en cada sesion",
+  "Graficas de evolucion de peso y composicion corporal",
+  "Fotos de progreso con comparativa antes y despues",
   "Reportes PDF profesionales descargables",
   "Portal personal para que veas tu avance 24/7",
   "Historial completo de todas tus evaluaciones",
@@ -33,27 +33,27 @@ const benefits = [
 const process_steps = [
   {
     number: "01",
-    title: "Evaluación Inicial",
+    title: "Evaluacion Inicial",
     desc: "Te registro en la plataforma y tomamos tus medidas de bioimpedancia, fotos y objetivos.",
     icon: Activity,
   },
   {
     number: "02",
-    title: "Seguimiento Periódico",
-    desc: "Cada mes actualizamos tus métricas para medir tu evolución real con datos concretos.",
+    title: "Seguimiento Periodico",
+    desc: "Cada mes actualizamos tus metricas para medir tu evolucion real con datos concretos.",
     icon: BarChart3,
   },
   {
     number: "03",
     title: "Resultados Visibles",
-    desc: "Accede a tu portal personal y visualiza tu progreso con gráficas y comparativas.",
+    desc: "Accede a tu portal personal y visualiza tu progreso con graficas y comparativas.",
     icon: Camera,
   },
 ];
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#09090b] text-white selection:bg-primary/30">
+    <div className="relative min-h-screen overflow-hidden bg-[#0b0b0f] text-white selection:bg-primary/30">
       {/* Noise overlay */}
       <div
         className="pointer-events-none fixed inset-0 z-50 opacity-[0.03]"
@@ -62,11 +62,11 @@ export default function Home() {
         }}
       />
 
-      {/* Gradient mesh */}
+      {/* Gradient mesh — amber + teal atmospheric glow */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-[30%] -top-[20%] h-[600px] w-[600px] rounded-full bg-primary/15 blur-[140px]" />
-        <div className="absolute -right-[20%] top-[30%] h-[500px] w-[500px] rounded-full bg-violet-600/10 blur-[120px]" />
-        <div className="absolute -bottom-[10%] left-[20%] h-[400px] w-[400px] rounded-full bg-emerald-600/8 blur-[100px]" />
+        <div className="absolute -left-[30%] -top-[20%] h-[600px] w-[600px] rounded-full bg-amber-500/12 blur-[140px]" />
+        <div className="absolute -right-[20%] top-[30%] h-[500px] w-[500px] rounded-full bg-teal-500/8 blur-[120px]" />
+        <div className="absolute -bottom-[10%] left-[20%] h-[400px] w-[400px] rounded-full bg-amber-600/6 blur-[100px]" />
       </div>
 
       {/* Nav */}
@@ -85,10 +85,10 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-3">
           <Button variant="ghost" className="text-white/70 hover:text-white hover:bg-white/5" asChild>
-            <Link href="/login">Iniciar Sesión</Link>
+            <Link href="/login">Iniciar Sesion</Link>
           </Button>
-          <Button className="rounded-full bg-white text-black hover:bg-white/90 font-medium px-6" asChild>
-            <Link href="/register">
+          <Button className="rounded-full bg-amber-400 text-black hover:bg-amber-300 font-medium px-6" asChild>
+            <Link href="/login">
               Acceder
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
@@ -106,7 +106,7 @@ export default function Home() {
             animate="visible"
             className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm text-white/60 backdrop-blur-sm"
           >
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
             Jorge Ortega &middot; Personal Trainer
           </motion.div>
 
@@ -115,14 +115,14 @@ export default function Home() {
             variants={fadeUp}
             initial="hidden"
             animate="visible"
-            className="max-w-4xl text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl"
+            className="font-display max-w-4xl text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl"
           >
             Tu progreso de entrenamiento,{" "}
             <span className="relative inline-block">
-              <span className="relative z-10 bg-gradient-to-r from-primary via-violet-400 to-emerald-400 bg-clip-text text-transparent">
+              <span className="relative z-10 bg-gradient-to-r from-amber-300 via-amber-400 to-teal-400 bg-clip-text text-transparent">
                 medible y visible
               </span>
-              <span className="absolute -bottom-1 left-0 right-0 h-[3px] rounded-full bg-gradient-to-r from-primary via-violet-400 to-emerald-400 opacity-50" />
+              <span className="absolute -bottom-1 left-0 right-0 h-[3px] rounded-full bg-gradient-to-r from-amber-300 via-amber-400 to-teal-400 opacity-50" />
             </span>
           </motion.h1>
 
@@ -133,7 +133,7 @@ export default function Home() {
             animate="visible"
             className="mt-6 max-w-2xl text-lg leading-relaxed text-white/50 md:text-xl"
           >
-            Seguimiento personalizado con evaluaciones de bioimpedancia, fotos de progreso y métricas detalladas. Cada sesión cuenta, cada avance se registra.
+            Seguimiento personalizado con evaluaciones de bioimpedancia, fotos de progreso y metricas detalladas. Cada sesion cuenta, cada avance se registra.
           </motion.p>
 
           <motion.div
@@ -145,10 +145,10 @@ export default function Home() {
           >
             <Button
               size="lg"
-              className="rounded-full bg-white text-black hover:bg-white/90 font-semibold px-8 h-13 text-base"
+              className="rounded-full bg-amber-400 text-black hover:bg-amber-300 font-semibold px-8 h-13 text-base"
               asChild
             >
-              <Link href="/register">
+              <Link href="/login">
                 Acceder a Mi Cuenta
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
@@ -175,7 +175,7 @@ export default function Home() {
           animate="visible"
           className="relative mx-auto mt-20 max-w-5xl"
         >
-          <div className="absolute -inset-4 rounded-2xl bg-gradient-to-b from-white/10 to-transparent opacity-50 blur-sm" />
+          <div className="absolute -inset-4 rounded-2xl bg-gradient-to-b from-amber-400/10 to-transparent opacity-50 blur-sm" />
           <div className="relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.03] p-1 shadow-2xl backdrop-blur-sm">
             <div className="flex items-center gap-1.5 px-4 py-3">
               <div className="h-2.5 w-2.5 rounded-full bg-white/20" />
@@ -183,13 +183,13 @@ export default function Home() {
               <div className="h-2.5 w-2.5 rounded-full bg-white/20" />
               <div className="ml-4 h-5 w-48 rounded-md bg-white/5" />
             </div>
-            <div className="rounded-lg bg-gradient-to-br from-[#0f0f11] to-[#131316] p-6 md:p-8">
+            <div className="rounded-lg bg-gradient-to-br from-[#0f0f12] to-[#121216] p-6 md:p-8">
               <div className="grid grid-cols-4 gap-3 md:gap-4">
                 {[
-                  { label: "Peso Actual", val: "82.5 kg", color: "from-primary/20 to-primary/5" },
-                  { label: "% Grasa", val: "22.5%", color: "from-violet-500/20 to-violet-500/5" },
-                  { label: "% Músculo", val: "38.0%", color: "from-emerald-500/20 to-emerald-500/5" },
-                  { label: "Evaluaciones", val: "8", color: "from-amber-500/20 to-amber-500/5" },
+                  { label: "Peso Actual", val: "82.5 kg", color: "from-amber-500/20 to-amber-500/5" },
+                  { label: "% Grasa", val: "22.5%", color: "from-teal-500/20 to-teal-500/5" },
+                  { label: "% Musculo", val: "38.0%", color: "from-emerald-500/20 to-emerald-500/5" },
+                  { label: "Evaluaciones", val: "8", color: "from-amber-400/20 to-amber-400/5" },
                 ].map((card, i) => (
                   <motion.div
                     key={card.label}
@@ -201,7 +201,7 @@ export default function Home() {
                     <p className="text-[10px] font-medium uppercase tracking-wider text-white/40 md:text-xs">
                       {card.label}
                     </p>
-                    <p className="mt-1 text-xl font-bold text-white md:text-2xl">{card.val}</p>
+                    <p className="mt-1 font-mono text-xl font-bold text-white md:text-2xl">{card.val}</p>
                   </motion.div>
                 ))}
               </div>
@@ -215,7 +215,7 @@ export default function Home() {
                         initial={{ height: 0 }}
                         animate={{ height: `${h}%` }}
                         transition={{ delay: 1.2 + i * 0.05, duration: 0.4 }}
-                        className="flex-1 rounded-sm bg-gradient-to-t from-primary/60 to-primary/20"
+                        className="flex-1 rounded-sm bg-gradient-to-t from-amber-500/60 to-amber-400/20"
                       />
                     ))}
                   </div>
@@ -236,7 +236,7 @@ export default function Home() {
                             initial={{ width: 0 }}
                             animate={{ width: `${w}%` }}
                             transition={{ delay: 1.6 + i * 0.1, duration: 0.5 }}
-                            className="h-full rounded-full bg-gradient-to-r from-violet-500 to-primary"
+                            className="h-full rounded-full bg-gradient-to-r from-teal-500 to-amber-400"
                           />
                         </div>
                         <span className="text-[10px] text-white/30">{w}%</span>
@@ -258,8 +258,8 @@ export default function Home() {
           viewport={{ once: true, margin: "-100px" }}
           className="mb-16 text-center"
         >
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Cómo funciona
+          <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+            Como funciona
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-white/40">
             Un proceso simple para que te enfoques en entrenar mientras yo me encargo de medir tu progreso.
@@ -274,13 +274,13 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
               transition={{ delay: i * 0.1, duration: 0.5 }}
-              className="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.02] p-6 transition-colors hover:border-white/[0.12] hover:bg-white/[0.04]"
+              className="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.02] p-6 transition-colors hover:border-amber-400/20 hover:bg-white/[0.04]"
             >
-              <span className="text-4xl font-black text-white/[0.04]">{step.number}</span>
+              <span className="font-display text-4xl font-black text-white/[0.04]">{step.number}</span>
               <div className="mt-2 mb-3 inline-flex rounded-lg border border-white/[0.08] bg-white/[0.04] p-2.5">
-                <step.icon className="h-5 w-5 text-white/60" />
+                <step.icon className="h-5 w-5 text-amber-400/60" />
               </div>
-              <h3 className="mb-2 text-base font-semibold tracking-tight">{step.title}</h3>
+              <h3 className="font-display mb-2 text-base font-semibold tracking-tight">{step.title}</h3>
               <p className="text-sm leading-relaxed text-white/40">{step.desc}</p>
             </motion.div>
           ))}
@@ -295,12 +295,12 @@ export default function Home() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
               Todo tu proceso{" "}
               <span className="text-white/40">en un solo lugar</span>
             </h2>
             <p className="mt-4 text-white/40">
-              Olvídate de fotos dispersas en el teléfono, hojas de cálculo o apuntes perdidos. Aquí tienes todo organizado.
+              Olvidate de fotos dispersas en el telefono, hojas de calculo o apuntes perdidos. Aqui tienes todo organizado.
             </p>
           </motion.div>
 
@@ -319,7 +319,7 @@ export default function Home() {
                 transition={{ delay: i * 0.06 }}
                 className="flex items-start gap-3 rounded-lg px-3 py-2"
               >
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400/70" />
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-amber-400/70" />
                 <span className="text-sm text-white/60">{benefit}</span>
               </motion.div>
             ))}
@@ -335,19 +335,19 @@ export default function Home() {
           viewport={{ once: true }}
           className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-br from-white/[0.04] to-transparent p-12 text-center md:p-16"
         >
-          <div className="absolute -right-20 -top-20 h-60 w-60 rounded-full bg-primary/10 blur-[80px]" />
-          <div className="absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-violet-600/10 blur-[80px]" />
+          <div className="absolute -right-20 -top-20 h-60 w-60 rounded-full bg-amber-500/10 blur-[80px]" />
+          <div className="absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-teal-500/8 blur-[80px]" />
 
-          <h2 className="relative text-3xl font-bold tracking-tight sm:text-4xl">
-            ¿Listo para ver tu evolución?
+          <h2 className="font-display relative text-3xl font-bold tracking-tight sm:text-4xl">
+            Listo para ver tu evolucion?
           </h2>
           <p className="relative mx-auto mt-4 max-w-md text-white/40">
-            Ingresa a tu cuenta y revisa tus métricas actualizadas, o contáctame para empezar tu proceso.
+            Ingresa a tu cuenta y revisa tus metricas actualizadas, o contactame para empezar tu proceso.
           </p>
           <div className="relative mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Button
               size="lg"
-              className="rounded-full bg-white text-black hover:bg-white/90 font-semibold px-10 h-13 text-base"
+              className="rounded-full bg-amber-400 text-black hover:bg-amber-300 font-semibold px-10 h-13 text-base"
               asChild
             >
               <Link href="/login">

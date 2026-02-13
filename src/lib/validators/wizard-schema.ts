@@ -32,12 +32,17 @@ export const availabilitySchema = z.object({
 });
 
 // Bioimpedancia Schema (Paso 4)
+// Bioimpedance Schema (Paso 4)
 export const bioimpedanceSchema = z.object({
-    waist: z.coerce.number().min(30, "Cintura requerida"),
-    hip: z.coerce.number().min(30, "Cadera requerida"),
-    bodyFat: z.coerce.number().min(1, "% Grasa requerido").max(60),
-    muscleMass: z.coerce.number().min(10, "% Músculo requerido").max(60),
-    visceralFat: z.coerce.number().min(1, "Grasa visceral requerida").max(30),
+    weight: z.coerce.number().min(30, "Peso requerido"),
+    bmi: z.coerce.number().optional().nullable(),
+    bodyFat: z.coerce.number().min(1, "% Grasa requerido").max(60).optional().nullable(),
+    muscleMass: z.coerce.number().min(10, "Masa Muscular requerida").max(100).optional().nullable(),
+    visceralFat: z.coerce.number().min(1, "Grasa visceral requerida").max(30).optional().nullable(),
+    bodyWater: z.coerce.number().min(20, "Agua corporal requerida").max(100).optional().nullable(),
+    skeletalMuscleMass: z.coerce.number().min(10, "Masa esquelética requerida").optional().nullable(),
+    basalMetabolism: z.coerce.number().min(500, "Metabolismo basal requerido").optional().nullable(),
+    bioimpedanceImage: z.any().optional(),
 });
 
 export const wizardSchema = z.object({

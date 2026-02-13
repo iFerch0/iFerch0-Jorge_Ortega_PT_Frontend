@@ -9,89 +9,113 @@ import { Textarea } from "@/components/ui/textarea";
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
     FormMessage,
+    FormDescription,
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Assessment } from "@/lib/data/mock-assessments";
+import type { Evaluation } from "@/types/api";
+import { evaluations } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Upload } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 const assessmentSchema = z.object({
     weight: z.string().min(1, "El peso es requerido"),
-    bodyFatPercentage: z.string().optional(),
-    muscleMassPercentage: z.string().optional(),
-    visceralFat: z.string().optional(),
+    bmi: z.string().optional(),
+    bodyFat: z.string().optional(), // Grasa Corporal (%)
+    muscleMass: z.string().optional(), // Masa Muscular (kg)
+    visceralFat: z.string().optional(), // Grasa Visceral (%)
+    bodyWater: z.string().optional(), // Agua Corporal (Litros)
+    skeletalMuscleMass: z.string().optional(), // Masa Muscular Esquelética (kg)
+    basalMetabolism: z.string().optional(), // Metabolismo Basal (Kcal)
     notes: z.string().optional(),
+    // Files are handled separately in state because controlled file inputs have issues
+    // or Zod validation for files in RHF is complex
 });
 
 type AssessmentFormValues = z.infer<typeof assessmentSchema>;
 
 interface AssessmentFormProps {
     clientId: string;
-    previousAssessment?: Assessment;
+    previousAssessment?: Evaluation;
+    clientHeight?: number; // cm
 }
 
-export function AssessmentForm({ clientId, previousAssessment }: AssessmentFormProps) {
+export function AssessmentForm({ clientId, previousAssessment, clientHeight }: AssessmentFormProps) {
     const router = useRouter();
+    const [bioimpedanceImage, setBioimpedanceImage] = useState<File | null>(null);
+    const [frontPhoto, setFrontPhoto] = useState<File | null>(null);
+    const [backPhoto, setBackPhoto] = useState<File | null>(null);
+    const [sidePhoto, setSidePhoto] = useState<File | null>(null);
+
     const form = useForm<AssessmentFormValues>({
         resolver: zodResolver(assessmentSchema),
         defaultValues: {
             weight: "",
-            bodyFatPercentage: "",
-            muscleMassPercentage: "",
+            bmi: "",
+            bodyFat: "",
+            muscleMass: "",
             visceralFat: "",
+            bodyWater: "",
+            skeletalMuscleMass: "",
+            basalMetabolism: "",
             notes: "",
         },
     });
 
+    const { isSubmitting } = form.formState;
+    const prevBio = previousAssessment?.bioimpedance;
+
+    // Auto-calculate BMI
+    const weight = form.watch("weight");
+    useEffect(() => {
+        if (weight && clientHeight) {
+            const w = parseFloat(weight);
+            if (!isNaN(w) && clientHeight > 0) {
+                const heightInMeters = clientHeight / 100;
+                const bmi = w / (heightInMeters * heightInMeters);
+                form.setValue("bmi", bmi.toFixed(1));
+            }
+        }
+    }, [weight, clientHeight, form]);
+
     async function onSubmit(data: AssessmentFormValues) {
         try {
-            const formData = new FormData();
-            formData.append("clientId", clientId);
-            formData.append("weight", data.weight);
-            formData.append("date", new Date().toISOString());
-            formData.append("type", "MONTHLY"); // Default to Monthly follow-up
+            await evaluations.create({
+                clientId,
+                date: new Date().toISOString(),
+                notes: data.notes || undefined,
+                weight: parseFloat(data.weight),
+                bmi: data.bmi ? parseFloat(data.bmi) : undefined,
+                bodyFat: data.bodyFat ? parseFloat(data.bodyFat) : undefined,
+                muscleMass: data.muscleMass ? parseFloat(data.muscleMass) : undefined,
+                visceralFat: data.visceralFat ? parseFloat(data.visceralFat) : undefined,
+                bodyWater: data.bodyWater ? parseFloat(data.bodyWater) : undefined,
+                skeletalMuscleMass: data.skeletalMuscleMass ? parseFloat(data.skeletalMuscleMass) : undefined,
+                basalMetabolism: data.basalMetabolism ? parseInt(data.basalMetabolism) : undefined,
 
-            if (data.bodyFatPercentage) formData.append("fatPercentage", data.bodyFatPercentage);
-            if (data.muscleMassPercentage) formData.append("muscleMass", data.muscleMassPercentage);
-            if (data.visceralFat) formData.append("visceralFat", data.visceralFat);
-            if (data.notes) formData.append("notes", data.notes);
-
-            // Photos are pending implementation in this form
-            // if (photos) ... 
-
-            console.log("Submitting assessment to API...");
-            const response = await fetch("/api/evaluations", {
-                method: "POST",
-                body: formData,
+                // Files
+                bioimpedanceImage: bioimpedanceImage || undefined,
+                front: frontPhoto || undefined,
+                back: backPhoto || undefined,
+                side: sidePhoto || undefined, // correcting variable name if I typoed above
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || "Error al guardar la evaluación");
-            }
-
             toast.success("Evaluación guardada exitosamente");
-
-            // Invalidate queries or update context here
-            setTimeout(() => {
-                router.push(`/dashboard/clients/${clientId}/assessments`);
-                router.refresh();
-            }, 1000);
-        } catch (error: any) {
-            console.error(error);
-            toast.error(error.message || "Error al conectar con el servidor");
+            router.push(`/dashboard/clients/${clientId}/assessments`);
+            router.refresh();
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Error al guardar la evaluación");
         }
     }
 
-    const renderComparison = (label: string, value?: number, unit: string = "") => {
-        if (value === undefined) return null;
+    const renderComparison = (value?: number | null, unit: string = "") => {
+        if (value == null) return null;
         return (
             <div className="text-sm text-muted-foreground mt-1">
                 Anterior: <span className="font-medium text-foreground">{value} {unit}</span>
@@ -111,95 +135,198 @@ export function AssessmentForm({ clientId, previousAssessment }: AssessmentFormP
                         </Button>
                         <h2 className="text-xl font-semibold">Nueva Evaluación</h2>
                     </div>
-                    <Button type="submit">
-                        <Save className="mr-2 h-4 w-4" />
+                    <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                            <Save className="mr-2 h-4 w-4" />
+                        )}
                         Guardar
                     </Button>
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-2">
-                    {/* Morphological Data */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Datos Corporales</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <FormField
-                                control={form.control}
-                                name="weight"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Peso (kg)</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="0.0" type="number" step="0.1" {...field} />
-                                        </FormControl>
-                                        {renderComparison("Anterior", previousAssessment?.weight, "kg")}
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Datos Corporales (Bioimpedancia)</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
                                 <FormField
                                     control={form.control}
-                                    name="bodyFatPercentage"
+                                    name="weight"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>% Grasa</FormLabel>
+                                            <FormLabel>Peso (kg)</FormLabel>
                                             <FormControl>
                                                 <Input placeholder="0.0" type="number" step="0.1" {...field} />
                                             </FormControl>
-                                            {renderComparison("Anterior", previousAssessment?.bodyFatPercentage, "%")}
+                                            {renderComparison(prevBio?.weight, "kg")}
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
+
                                 <FormField
                                     control={form.control}
-                                    name="muscleMassPercentage"
+                                    name="bmi"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>% Músculo</FormLabel>
+                                            <FormLabel>IMC</FormLabel>
                                             <FormControl>
                                                 <Input placeholder="0.0" type="number" step="0.1" {...field} />
                                             </FormControl>
-                                            {renderComparison("Anterior", previousAssessment?.muscleMassPercentage, "%")}
+                                            <FormDescription>
+                                                {clientHeight ? "Calculado automáticamente" : "Ingresa manualmente"}
+                                            </FormDescription>
+                                            {renderComparison(prevBio?.bmi)}
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
-                            </div>
-                            <FormField
-                                control={form.control}
-                                name="visceralFat"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Grasa Visceral</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="0" type="number" step="1" {...field} />
-                                        </FormControl>
-                                        {renderComparison("Anterior", previousAssessment?.visceralFat)}
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </CardContent>
-                    </Card>
 
-                    {/* Photos & Notes */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="bodyFat"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Grasa Corporal (%)</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="0.0" type="number" step="0.1" {...field} />
+                                                </FormControl>
+                                                {renderComparison(prevBio?.bodyFat, "%")}
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="visceralFat"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Grasa Visceral (%)</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="0" type="number" step="1" {...field} />
+                                                </FormControl>
+                                                {renderComparison(prevBio?.visceralFat, "%")}
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="muscleMass"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Masa Muscular (kg)</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="0.0" type="number" step="0.1" {...field} />
+                                                </FormControl>
+                                                {renderComparison(prevBio?.muscleMass, "kg")}
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="skeletalMuscleMass"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>M.M. Esquelética (kg)</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="0.0" type="number" step="0.1" {...field} />
+                                                </FormControl>
+                                                {renderComparison(prevBio?.skeletalMuscleMass, "kg")}
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="bodyWater"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Agua Corporal (Litros)</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="0.0" type="number" step="0.1" {...field} />
+                                                </FormControl>
+                                                {renderComparison(prevBio?.bodyWater, "L")}
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="basalMetabolism"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Metab. Basal (Kcal)</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="0" type="number" step="1" {...field} />
+                                                </FormControl>
+                                                {renderComparison(prevBio?.basalMetabolism, "Kcal")}
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <FormLabel>Foto del Ticket (Bioimpedancia)</FormLabel>
+                                    <Input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => e.target.files && setBioimpedanceImage(e.target.files[0])}
+                                    />
+                                    {prevBio?.imageUrl && (
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            Anterior: Existe imagen adjunta
+                                        </p>
+                                    )}
+                                </div>
+
+                            </CardContent>
+                        </Card>
+                    </div>
+
                     <div className="space-y-6">
                         <Card>
                             <CardHeader>
                                 <CardTitle>Fotos de Progreso</CardTitle>
                             </CardHeader>
-                            <CardContent>
-                                <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-10 text-center">
-                                    <p className="text-sm text-muted-foreground">
-                                        Funcionalidad de carga de fotos pendiente (Sprint 4)
-                                    </p>
-                                    <Button variant="secondary" size="sm" className="mt-4" disabled>
-                                        Subir Fotos
-                                    </Button>
+                            <CardContent className="space-y-4">
+                                <div className="grid gap-4">
+                                    <div className="space-y-2">
+                                        <FormLabel>Foto Frontal</FormLabel>
+                                        <Input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => e.target.files && setFrontPhoto(e.target.files[0])}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <FormLabel>Foto Trasera</FormLabel>
+                                        <Input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => e.target.files && setBackPhoto(e.target.files[0])}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <FormLabel>Foto Lateral</FormLabel>
+                                        <Input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => e.target.files && setSidePhoto(e.target.files[0])} // Removed typooooo
+                                        />
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
@@ -216,7 +343,7 @@ export function AssessmentForm({ clientId, previousAssessment }: AssessmentFormP
                                         <FormItem>
                                             <FormControl>
                                                 <Textarea
-                                                    placeholder="Anotaciones sobre el progreso, sensaciones, cambios en dieta..."
+                                                    placeholder="Anotaciones sobre el progreso..."
                                                     className="min-h-[120px] resize-none"
                                                     {...field}
                                                 />

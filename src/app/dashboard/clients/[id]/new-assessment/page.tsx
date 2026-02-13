@@ -1,24 +1,53 @@
+"use client";
 
-import { mockAssessments } from "@/lib/data/mock-assessments";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { Loader2 } from "lucide-react";
 import { AssessmentForm } from "@/components/assessments/AssessmentForm";
+import { evaluations as evaluationsApi } from "@/lib/api";
+import type { Evaluation } from "@/types/api";
 
-interface PageProps {
-    params: Promise<{ id: string }>;
-}
+export default function NewAssessmentPage() {
+    const params = useParams<{ id: string }>();
+    const id = params.id;
 
-export default async function NewAssessmentPage({ params }: PageProps) {
-    const { id } = await params;
+    const [latestEval, setLatestEval] = useState<Evaluation | undefined>(undefined);
+    const [clientHeight, setClientHeight] = useState<number | undefined>(undefined);
+    const [loading, setLoading] = useState(true);
 
-    // Get the latest assessment for comparison
-    const clientAssessments = mockAssessments
-        .filter((a) => a.clientId === id)
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    useEffect(() => {
+        if (!id) return;
 
-    const latestAssessment = clientAssessments[0];
+        Promise.all([
+            evaluationsApi.getHistory(id),
+            // We need to import 'clients' from api to fetch client details.
+            // But wait, it's not imported. Let's assume we'll fix imports or use explicit call.
+            // Better to just update imports too.
+            // For now, let's just make the calls.
+            import("@/lib/api").then(m => m.clients.get(id))
+        ])
+            .then(([evals, client]) => {
+                const sorted = [...evals].sort(
+                    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+                );
+                setLatestEval(sorted[0]);
+                setClientHeight(client.height);
+            })
+            .catch(() => { })
+            .finally(() => setLoading(false));
+    }, [id]);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-4xl mx-auto py-6">
-            <AssessmentForm clientId={id} previousAssessment={latestAssessment} />
+            <AssessmentForm clientId={id} previousAssessment={latestEval} clientHeight={clientHeight} />
         </div>
     );
 }

@@ -1,4 +1,7 @@
-import { notFound } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
     ArrowLeft,
@@ -11,19 +14,16 @@ import {
     TrendingDown,
     TrendingUp,
     Minus,
+    Loader2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { mockAssessments } from "@/lib/data/mock-assessments";
-import { mockClients } from "@/lib/data/mock-clients";
+import { evaluations as evaluationsApi } from "@/lib/api";
+import type { Evaluation } from "@/types/api";
 
-interface PageProps {
-    params: Promise<{ id: string; evalId: string }>;
-}
-
-function DeltaBadge({ current, previous, unit, invert = false }: { current?: number; previous?: number; unit: string; invert?: boolean }) {
-    if (current === undefined || previous === undefined) return null;
+function DeltaBadge({ current, previous, unit, invert = false }: { current?: number | null; previous?: number | null; unit: string; invert?: boolean }) {
+    if (current == null || previous == null) return null;
     const diff = current - previous;
     if (diff === 0) return (
         <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
@@ -31,7 +31,7 @@ function DeltaBadge({ current, previous, unit, invert = false }: { current?: num
         </span>
     );
     const isPositive = diff > 0;
-    const isGood = invert ? !isPositive : isPositive;
+    const isGood = invert ? isPositive : !isPositive;
 
     return (
         <span
@@ -53,39 +53,66 @@ function DeltaBadge({ current, previous, unit, invert = false }: { current?: num
     );
 }
 
-export default async function EvaluationDetailPage({ params }: PageProps) {
-    const { id, evalId } = await params;
-    const client = mockClients.find((c) => c.id === id);
-    const assessment = mockAssessments.find((a) => a.id === evalId);
+export default function EvaluationDetailPage() {
+    const params = useParams<{ id: string; evalId: string }>();
+    const { id, evalId } = params;
 
-    if (!client || !assessment || assessment.clientId !== id) {
-        notFound();
+    const [evals, setEvals] = useState<Evaluation[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!id) return;
+        evaluationsApi.getHistory(id)
+            .then(setEvals)
+            .catch(() => {})
+            .finally(() => setLoading(false));
+    }, [id]);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+        );
     }
 
-    // Find previous assessment for comparison
-    const allClientAssessments = mockAssessments
-        .filter((a) => a.clientId === id)
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const sortedEvals = [...evals].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
 
-    const currentIndex = allClientAssessments.findIndex((a) => a.id === evalId);
-    const previousAssessment = allClientAssessments[currentIndex + 1] || null;
+    const currentIndex = sortedEvals.findIndex((a) => a.id === evalId);
+    const assessment = sortedEvals[currentIndex];
+    const previousAssessment = sortedEvals[currentIndex + 1] || null;
 
+    if (!assessment) {
+        return (
+            <div className="text-center py-12">
+                <p className="text-sm text-muted-foreground">Evaluación no encontrada</p>
+                <Button variant="outline" size="sm" className="mt-3" asChild>
+                    <Link href={`/dashboard/clients/${id}/assessments`}>Volver</Link>
+                </Button>
+            </div>
+        );
+    }
+
+    const bio = assessment.bioimpedance;
+    const prevBio = previousAssessment?.bioimpedance;
     const isLatest = currentIndex === 0;
 
     const metrics = [
         {
             label: "Peso",
-            value: assessment.weight,
-            prev: previousAssessment?.weight,
+            value: bio?.weight,
+            prev: prevBio?.weight,
             unit: " kg",
             icon: Weight,
             deltaUnit: " kg",
-            invert: false, // lower is generally "good" for weight loss
+            invert: false,
         },
         {
             label: "% Grasa Corporal",
-            value: assessment.bodyFatPercentage,
-            prev: previousAssessment?.bodyFatPercentage,
+            value: bio?.bodyFat,
+            prev: prevBio?.bodyFat,
             unit: "%",
             icon: Percent,
             deltaUnit: "%",
@@ -93,17 +120,17 @@ export default async function EvaluationDetailPage({ params }: PageProps) {
         },
         {
             label: "% Masa Muscular",
-            value: assessment.muscleMassPercentage,
-            prev: previousAssessment?.muscleMassPercentage,
+            value: bio?.muscleMass,
+            prev: prevBio?.muscleMass,
             unit: "%",
             icon: Activity,
             deltaUnit: "%",
-            invert: true, // higher is good
+            invert: true,
         },
         {
             label: "Grasa Visceral",
-            value: assessment.visceralFat,
-            prev: previousAssessment?.visceralFat,
+            value: bio?.visceralFat,
+            prev: prevBio?.visceralFat,
             unit: "",
             icon: Heart,
             deltaUnit: "",
@@ -140,7 +167,7 @@ export default async function EvaluationDetailPage({ params }: PageProps) {
             {/* Metrics Grid */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {metrics.map((metric) => {
-                    if (metric.value === undefined) return null;
+                    if (metric.value == null) return null;
                     return (
                         <Card key={metric.label}>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
@@ -150,7 +177,7 @@ export default async function EvaluationDetailPage({ params }: PageProps) {
                                 <metric.icon className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold tabular-nums">
+                                <div className="font-mono text-2xl font-bold tabular-nums">
                                     {metric.value}
                                     <span className="text-base font-normal text-muted-foreground">
                                         {metric.unit}
@@ -164,7 +191,7 @@ export default async function EvaluationDetailPage({ params }: PageProps) {
                                         invert={metric.invert}
                                     />
                                 </div>
-                                {metric.prev !== undefined && (
+                                {metric.prev != null && (
                                     <p className="mt-0.5 text-[11px] text-muted-foreground">
                                         Anterior: {metric.prev}{metric.unit}
                                     </p>
@@ -209,26 +236,23 @@ export default async function EvaluationDetailPage({ params }: PageProps) {
                                 </thead>
                                 <tbody className="divide-y">
                                     {metrics.map((m) => {
-                                        if (m.value === undefined) return null;
-                                        const diff = m.prev !== undefined ? m.value - m.prev : null;
+                                        if (m.value == null) return null;
                                         return (
                                             <tr key={m.label}>
                                                 <td className="py-2.5 font-medium">{m.label}</td>
                                                 <td className="py-2.5 text-right text-muted-foreground tabular-nums">
-                                                    {m.prev !== undefined ? `${m.prev}${m.unit}` : "—"}
+                                                    {m.prev != null ? `${m.prev}${m.unit}` : "—"}
                                                 </td>
                                                 <td className="py-2.5 text-right font-medium tabular-nums">
                                                     {m.value}{m.unit}
                                                 </td>
                                                 <td className="py-2.5 text-right">
-                                                    {diff !== null && (
-                                                        <DeltaBadge
-                                                            current={m.value}
-                                                            previous={m.prev}
-                                                            unit={m.deltaUnit}
-                                                            invert={m.invert}
-                                                        />
-                                                    )}
+                                                    <DeltaBadge
+                                                        current={m.value}
+                                                        previous={m.prev}
+                                                        unit={m.deltaUnit}
+                                                        invert={m.invert}
+                                                    />
                                                 </td>
                                             </tr>
                                         );

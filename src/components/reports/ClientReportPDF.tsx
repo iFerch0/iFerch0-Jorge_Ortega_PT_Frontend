@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Image,
 } from "@react-pdf/renderer";
-import { Assessment } from "@/lib/data/mock-assessments";
+import type { Evaluation } from "@/types/api";
 
 // Create styles
 const styles = StyleSheet.create({
@@ -83,7 +83,7 @@ interface ClientReportPDFProps {
   clientName: string;
   clientEmail: string;
   goal: string;
-  assessments: Assessment[];
+  assessments: Evaluation[];
 }
 
 // Create Document Component
@@ -97,8 +97,8 @@ export const ClientReportPDF = ({
     <Page size="A4" style={styles.page}>
       <View style={styles.header}>
         <View>
-            <Text style={styles.logo}>Jorge Ortega PT</Text>
-            <Text style={{ fontSize: 10, color: "#6B7280" }}>Personal Trainer</Text>
+          <Text style={styles.logo}>Jorge Ortega PT</Text>
+          <Text style={{ fontSize: 10, color: "#6B7280" }}>Personal Trainer</Text>
         </View>
         <Text style={{ fontSize: 10, color: "#9CA3AF" }}>{new Date().toLocaleDateString()}</Text>
       </View>
@@ -127,7 +127,7 @@ export const ClientReportPDF = ({
               <Text style={styles.tableCell}>% Músculo</Text>
             </View>
           </View>
-           {assessments.map((assessment) => (
+          {assessments.map((assessment) => (
             <View style={styles.tableRow} key={assessment.id}>
               <View style={styles.tableCol}>
                 <Text style={styles.tableCell}>
@@ -135,16 +135,16 @@ export const ClientReportPDF = ({
                 </Text>
               </View>
               <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{assessment.weight}</Text>
+                <Text style={styles.tableCell}>{assessment.bioimpedance?.weight ?? "-"}</Text>
               </View>
               <View style={styles.tableCol}>
                 <Text style={styles.tableCell}>
-                    {assessment.bodyFatPercentage ? `${assessment.bodyFatPercentage}%` : "-"}
+                  {assessment.bioimpedance?.bodyFat ? `${assessment.bioimpedance.bodyFat}%` : "-"}
                 </Text>
               </View>
               <View style={styles.tableCol}>
                 <Text style={styles.tableCell}>
-                    {assessment.muscleMassPercentage ? `${assessment.muscleMassPercentage}%` : "-"}
+                  {assessment.bioimpedance?.muscleMass ? `${assessment.bioimpedance.muscleMass}%` : "-"}
                 </Text>
               </View>
             </View>
@@ -155,10 +155,10 @@ export const ClientReportPDF = ({
       <View style={styles.section}>
         <Text style={styles.title}>Notas y Recomendaciones</Text>
         <Text style={styles.text}>
-            Continúa con el excelente trabajo. Recuerda mantener la consistencia en tu alimentación y descanso.
+          Continúa con el excelente trabajo. Recuerda mantener la consistencia en tu alimentación y descanso.
         </Text>
       </View>
-      
+
       <Text style={{ position: "absolute", bottom: 30, left: 30, right: 30, textAlign: "center", fontSize: 10, color: "#9CA3AF" }}>
         Generado por Jorge Ortega Personal Trainer
       </Text>

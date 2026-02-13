@@ -8,32 +8,57 @@ import { Button } from "@/components/ui/button";
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
     FormMessage,
+    FormDescription
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-
 import { WizardLayout } from "../WizardLayout";
+import { useEffect, useState } from "react";
 
 export function StepBioimpedance() {
     const { data, setBioimpedance, nextStep, prevStep } = useWizardStore();
+    const [file, setFile] = useState<File | null>(null);
 
     const form = useForm<Bioimpedance>({
         resolver: zodResolver(bioimpedanceSchema) as any,
-        defaultValues: data.bioimpedance || {
-            waist: 0,
-            hip: 0,
-            bodyFat: 0,
-            muscleMass: 0,
-            visceralFat: 0,
+        defaultValues: {
+            weight: data.bioimpedance?.weight || data.personalData?.weight || 0,
+            bmi: data.bioimpedance?.bmi || 0,
+            bodyFat: data.bioimpedance?.bodyFat || 0,
+            muscleMass: data.bioimpedance?.muscleMass || 0,
+            visceralFat: data.bioimpedance?.visceralFat || 0,
+            bodyWater: data.bioimpedance?.bodyWater || 0,
+            skeletalMuscleMass: data.bioimpedance?.skeletalMuscleMass || 0,
+            basalMetabolism: data.bioimpedance?.basalMetabolism || 0,
         },
     });
 
+    // Auto-calculate BMI if height exists and weight changes
+    const weight = form.watch("weight");
+    const height = data.personalData?.height; // cm
+
+    useEffect(() => {
+        if (weight > 0 && height && height > 0) {
+            const heightInMeters = height / 100;
+            const bmi = weight / (heightInMeters * heightInMeters);
+            form.setValue("bmi", parseFloat(bmi.toFixed(1)));
+        }
+    }, [weight, height, form]);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setFile(e.target.files[0]);
+        }
+    };
+
     const onSubmit = (values: Bioimpedance) => {
-        setBioimpedance(values);
+        // Guardamos el archivo en el objeto de valores, aunque no persistirá en localStorage
+        // NextStep y StepReview se encargarán de manejarlo si está en memoria
+        // Ojo: Bioimpedance en store es inferido de bioimpedanceSchema, que ahora incluye 'bioimpedanceImage?: any'
+        setBioimpedance({ ...values, bioimpedanceImage: file });
         nextStep();
     };
 
@@ -47,12 +72,18 @@ export function StepBioimpedance() {
                     <div className="grid gap-4 sm:grid-cols-2">
                         <FormField
                             control={form.control}
-                            name="bodyFat"
+                            name="weight"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>% Grasa Corporal</FormLabel>
+                                    <FormLabel>Peso (kg)</FormLabel>
                                     <FormControl>
-                                        <Input type="number" step="0.1" {...field} />
+                                        <Input
+                                            type="number"
+                                            step="0.1"
+                                            {...field}
+                                            value={field.value ?? ''}
+                                            onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                                        />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -60,12 +91,43 @@ export function StepBioimpedance() {
                         />
                         <FormField
                             control={form.control}
-                            name="muscleMass"
+                            name="bmi"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>% Masa Muscular</FormLabel>
+                                    <FormLabel>IMC</FormLabel>
                                     <FormControl>
-                                        <Input type="number" step="0.1" {...field} />
+                                        <Input
+                                            type="number"
+                                            step="0.1"
+                                            {...field}
+                                            value={field.value ?? ''}
+                                            onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                                        />
+                                    </FormControl>
+                                    <FormDescription>
+                                        {height ? "Calculado automáticamente basado en altura." : "Ingresa manualmente."}
+                                    </FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <FormField
+                            control={form.control}
+                            name="bodyFat"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>% Grasa Corporal</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            type="number"
+                                            step="0.1"
+                                            {...field}
+                                            value={field.value ?? ''}
+                                            onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                                        />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -76,9 +138,15 @@ export function StepBioimpedance() {
                             name="visceralFat"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Grasa Visceral</FormLabel>
+                                    <FormLabel>Grasa Visceral (%)</FormLabel>
                                     <FormControl>
-                                        <Input type="number" step="1" {...field} />
+                                        <Input
+                                            type="number"
+                                            step="1"
+                                            {...field}
+                                            value={field.value ?? ''}
+                                            onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                                        />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -89,12 +157,18 @@ export function StepBioimpedance() {
                     <div className="grid gap-4 sm:grid-cols-2">
                         <FormField
                             control={form.control}
-                            name="waist"
+                            name="muscleMass"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Cintura (cm)</FormLabel>
+                                    <FormLabel>Masa Muscular (kg)</FormLabel>
                                     <FormControl>
-                                        <Input type="number" step="0.5" {...field} />
+                                        <Input
+                                            type="number"
+                                            step="0.1"
+                                            {...field}
+                                            value={field.value ?? ''}
+                                            onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                                        />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -102,17 +176,77 @@ export function StepBioimpedance() {
                         />
                         <FormField
                             control={form.control}
-                            name="hip"
+                            name="skeletalMuscleMass"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Cadera (cm)</FormLabel>
+                                    <FormLabel>M. Musc. Esquelética (kg)</FormLabel>
                                     <FormControl>
-                                        <Input type="number" step="0.5" {...field} />
+                                        <Input
+                                            type="number"
+                                            step="0.1"
+                                            {...field}
+                                            value={field.value ?? ''}
+                                            onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                                        />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <FormField
+                            control={form.control}
+                            name="bodyWater"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Agua Corporal (Litros)</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            type="number"
+                                            step="0.1"
+                                            {...field}
+                                            value={field.value ?? ''}
+                                            onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="basalMetabolism"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Metabolismo Basal (Kcal)</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            type="number"
+                                            step="1"
+                                            {...field}
+                                            value={field.value ?? ''}
+                                            onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+
+                    {/* Image Upload for Ticket */}
+                    <div className="grid gap-2">
+                        <FormLabel>Foto del Ticket de Bioimpedancia (Opcional)</FormLabel>
+                        <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                        />
+                        <FormDescription>
+                            Sube una foto de la hoja de resultados impresa.
+                        </FormDescription>
                     </div>
 
                     <div className="flex justify-between pt-4">

@@ -1,61 +1,84 @@
-import { mockClients } from "@/lib/data/mock-clients";
-import { notFound } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dumbbell, Target, CalendarDays, TrendingDown, TrendingUp, Minus } from "lucide-react";
-
-import { mockAssessments } from "@/lib/data/mock-assessments";
+import { Target, CalendarDays, TrendingDown, TrendingUp, Loader2 } from "lucide-react";
+import { clients as clientsApi, evaluations as evaluationsApi } from "@/lib/api";
+import type { Client, Evaluation } from "@/types/api";
 import { WeightChart } from "@/components/charts/WeightChart";
 import { CompositionChart } from "@/components/charts/CompositionChart";
 
-interface PageProps {
-    params: Promise<{ id: string }>;
-}
+export default function ClientProfilePage() {
+    const params = useParams<{ id: string }>();
+    const id = params.id;
 
-export default async function ClientProfilePage({ params }: PageProps) {
-    const { id } = await params;
-    const client = mockClients.find((c) => c.id === id);
+    const [client, setClient] = useState<Client | null>(null);
+    const [evals, setEvals] = useState<Evaluation[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    if (!client) {
-        notFound();
+    useEffect(() => {
+        if (!id) return;
+        Promise.all([
+            clientsApi.get(id),
+            evaluationsApi.getHistory(id),
+        ])
+            .then(([clientData, evalsData]) => {
+                setClient(clientData);
+                setEvals(evalsData);
+            })
+            .catch(() => {})
+            .finally(() => setLoading(false));
+    }, [id]);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+        );
     }
 
-    const clientAssessments = mockAssessments
-        .filter((a) => a.clientId === id)
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    if (!client) return null;
 
-    const latest = clientAssessments[0];
-    const previous = clientAssessments[1];
+    const sortedEvals = [...evals].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
 
-    // Dynamic calculations
-    const weightDiff = latest && previous ? latest.weight - previous.weight : null;
-    const fatDiff =
-        latest?.bodyFatPercentage !== undefined && previous?.bodyFatPercentage !== undefined
-            ? latest.bodyFatPercentage - previous.bodyFatPercentage
-            : null;
-    const muscleDiff =
-        latest?.muscleMassPercentage !== undefined && previous?.muscleMassPercentage !== undefined
-            ? latest.muscleMassPercentage - previous.muscleMassPercentage
-            : null;
+    const latest = sortedEvals[0];
+    const previous = sortedEvals[1];
+    const latestBio = latest?.bioimpedance;
+    const prevBio = previous?.bioimpedance;
 
-    const joinedDate = new Date(client.joinedAt);
+    const weightDiff = latestBio?.weight && prevBio?.weight
+        ? latestBio.weight - prevBio.weight
+        : null;
+    const fatDiff = latestBio?.bodyFat != null && prevBio?.bodyFat != null
+        ? latestBio.bodyFat - prevBio.bodyFat
+        : null;
+
+    const createdDate = new Date(client.createdAt);
     const now = new Date();
     const monthsActive = Math.max(
         1,
-        Math.round((now.getTime() - joinedDate.getTime()) / (1000 * 60 * 60 * 24 * 30))
+        Math.round((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24 * 30))
     );
+
+    const objective = client.objectives?.[0]?.content || "Sin objetivo definido";
 
     const stats = [
         {
             title: "Objetivo Principal",
-            value: client.goal,
+            value: objective,
             icon: Target,
             description: "Meta actual definida",
-            delta: null,
+            delta: null as number | null,
+            deltaGoodWhenNegative: false,
         },
         {
             title: "Último Peso",
-            value: latest ? `${latest.weight} kg` : "—",
+            value: latestBio?.weight ? `${latestBio.weight} kg` : "—",
             icon: weightDiff !== null && weightDiff <= 0 ? TrendingDown : TrendingUp,
             description: weightDiff !== null
                 ? `${weightDiff > 0 ? "+" : ""}${weightDiff.toFixed(1)}kg vs anterior`
@@ -65,7 +88,7 @@ export default async function ClientProfilePage({ params }: PageProps) {
         },
         {
             title: "% Grasa Corporal",
-            value: latest?.bodyFatPercentage !== undefined ? `${latest.bodyFatPercentage}%` : "—",
+            value: latestBio?.bodyFat != null ? `${latestBio.bodyFat}%` : "—",
             icon: fatDiff !== null && fatDiff <= 0 ? TrendingDown : TrendingUp,
             description: fatDiff !== null
                 ? `${fatDiff > 0 ? "+" : ""}${fatDiff.toFixed(1)}% vs anterior`
@@ -77,8 +100,9 @@ export default async function ClientProfilePage({ params }: PageProps) {
             title: "Antigüedad",
             value: `${monthsActive} ${monthsActive === 1 ? "Mes" : "Meses"}`,
             icon: CalendarDays,
-            description: `Desde ${joinedDate.toLocaleDateString("es-CO", { month: "short", year: "numeric" })}`,
-            delta: null,
+            description: `Desde ${createdDate.toLocaleDateString("es-CO", { month: "short", year: "numeric" })}`,
+            delta: null as number | null,
+            deltaGoodWhenNegative: false,
         },
     ];
 
@@ -88,7 +112,7 @@ export default async function ClientProfilePage({ params }: PageProps) {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {stats.map((stat, index) => {
                     const isGood =
-                        stat.delta !== null && stat.delta !== undefined
+                        stat.delta !== null
                             ? stat.deltaGoodWhenNegative
                                 ? stat.delta <= 0
                                 : stat.delta > 0
@@ -103,9 +127,9 @@ export default async function ClientProfilePage({ params }: PageProps) {
                                 <stat.icon className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{stat.value}</div>
+                                <div className="font-mono text-2xl font-bold tabular-nums">{stat.value}</div>
                                 <div className="flex items-center gap-1.5 mt-1">
-                                    {stat.delta !== null && stat.delta !== undefined && (
+                                    {stat.delta !== null && (
                                         <Badge
                                             variant="secondary"
                                             className={`text-[10px] px-1.5 py-0 ${
@@ -128,39 +152,50 @@ export default async function ClientProfilePage({ params }: PageProps) {
                 })}
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                <WeightChart data={clientAssessments} goalWeight={80} />
-                <Card className="col-span-full lg:col-span-3">
-                    <CardHeader>
-                        <CardTitle>Últimas Observaciones</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            {clientAssessments
-                                .filter((a) => a.notes)
-                                .slice(0, 3)
-                                .map((a) => (
-                                    <div key={a.id} className="rounded-md bg-muted p-3 text-sm">
-                                        <p className="font-semibold mb-1">
-                                            {new Date(a.date).toLocaleDateString("es-CO", {
-                                                day: "numeric",
-                                                month: "short",
-                                                year: "numeric",
-                                            })}
-                                        </p>
-                                        <p className="text-muted-foreground">{a.notes}</p>
-                                    </div>
-                                ))}
-                            {clientAssessments.filter((a) => a.notes).length === 0 && (
-                                <p className="text-sm text-muted-foreground text-center py-4">
-                                    No hay observaciones registradas.
-                                </p>
-                            )}
-                        </div>
+            {/* Charts */}
+            {sortedEvals.length > 0 && (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                    <WeightChart data={sortedEvals} />
+                    <Card className="col-span-full lg:col-span-3">
+                        <CardHeader>
+                            <CardTitle>Últimas Observaciones</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                {sortedEvals
+                                    .filter((a) => a.notes)
+                                    .slice(0, 3)
+                                    .map((a) => (
+                                        <div key={a.id} className="rounded-md bg-muted p-3 text-sm">
+                                            <p className="font-semibold mb-1">
+                                                {new Date(a.date).toLocaleDateString("es-CO", {
+                                                    day: "numeric",
+                                                    month: "short",
+                                                    year: "numeric",
+                                                })}
+                                            </p>
+                                            <p className="text-muted-foreground">{a.notes}</p>
+                                        </div>
+                                    ))}
+                                {sortedEvals.filter((a) => a.notes).length === 0 && (
+                                    <p className="text-sm text-muted-foreground text-center py-4">
+                                        No hay observaciones registradas.
+                                    </p>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <CompositionChart data={sortedEvals} />
+                </div>
+            )}
+
+            {sortedEvals.length === 0 && (
+                <Card>
+                    <CardContent className="py-12 text-center">
+                        <p className="text-muted-foreground">No hay evaluaciones registradas para este cliente.</p>
                     </CardContent>
                 </Card>
-                <CompositionChart data={clientAssessments} />
-            </div>
+            )}
         </div>
     );
 }

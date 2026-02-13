@@ -11,24 +11,23 @@ import {
     Legend,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Assessment } from "@/lib/data/mock-assessments";
+import type { Evaluation } from "@/types/api";
 
 interface CompositionChartProps {
-    data: Assessment[];
+    data: Evaluation[];
 }
 
 export function CompositionChart({ data }: CompositionChartProps) {
-    // Sort data, filter out entries without composition data
     const chartData = [...data]
-        .filter((item) => item.muscleMassPercentage && item.bodyFatPercentage)
+        .filter((item) => item.bioimpedance?.muscleMass && item.bioimpedance?.bodyFat)
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
         .map((item) => ({
             date: new Date(item.date).toLocaleDateString("es-ES", {
                 day: "2-digit",
                 month: "short",
             }),
-            muscle: item.muscleMassPercentage,
-            fat: item.bodyFatPercentage,
+            muscle: item.bioimpedance!.muscleMass,
+            fat: item.bioimpedance!.bodyFat,
         }));
 
     if (chartData.length === 0) return null;
@@ -43,12 +42,7 @@ export function CompositionChart({ data }: CompositionChartProps) {
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart
                             data={chartData}
-                            margin={{
-                                top: 10,
-                                right: 30,
-                                left: 0,
-                                bottom: 0,
-                            }}
+                            margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
                         >
                             <defs>
                                 <linearGradient id="colorMuscle" x1="0" y1="0" x2="0" y2="1">

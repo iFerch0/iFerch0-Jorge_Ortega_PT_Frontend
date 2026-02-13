@@ -1,10 +1,32 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
 import { AssessmentList } from "@/components/assessments/AssessmentList";
-import { mockAssessments } from "@/lib/data/mock-assessments";
+import { useSession } from "@/hooks/useSession";
+import { evaluations as evaluationsApi } from "@/lib/api";
+import type { Evaluation } from "@/types/api";
 
 export default function PortalAssessmentsPage() {
-    // Simulate logged-in client logic
-    const clientId = "1";
-    const clientAssessments = mockAssessments.filter((a) => a.clientId === clientId);
+    const { user, loading: sessionLoading } = useSession();
+    const [evals, setEvals] = useState<Evaluation[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!user?.id) return;
+        evaluationsApi.getHistory(user.id)
+            .then(setEvals)
+            .catch(() => {})
+            .finally(() => setLoading(false));
+    }, [user?.id]);
+
+    if (sessionLoading || loading) {
+        return (
+            <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
@@ -15,7 +37,7 @@ export default function PortalAssessmentsPage() {
                 </p>
             </div>
 
-            <AssessmentList assessments={clientAssessments} />
+            <AssessmentList assessments={evals} />
         </div>
     );
 }

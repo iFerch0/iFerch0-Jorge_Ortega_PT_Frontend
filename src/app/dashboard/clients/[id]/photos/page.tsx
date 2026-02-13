@@ -1,73 +1,105 @@
 "use client";
 
-import { use } from "react";
-import { Camera, Calendar, ArrowLeftRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import dynamic from "next/dynamic";
+import { Camera, Calendar, ArrowLeftRight, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PhotoComparison } from "@/components/profile/PhotoComparison";
-import { mockAssessments } from "@/lib/data/mock-assessments";
+import { evaluations as evaluationsApi } from "@/lib/api";
+import type { Evaluation } from "@/types/api";
 
-// Mock photos for demonstration
-const mockPhotos = [
-    {
-        id: "p1",
-        assessmentId: "a2",
-        date: "2024-01-15",
-        angle: "Frontal",
-        url: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=600&fit=crop",
-    },
-    {
-        id: "p2",
-        assessmentId: "a2",
-        date: "2024-01-15",
-        angle: "Lateral",
-        url: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400&h=600&fit=crop",
-    },
-    {
-        id: "p3",
-        assessmentId: "a1",
-        date: "2024-02-10",
-        angle: "Frontal",
-        url: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=600&fit=crop",
-    },
-    {
-        id: "p4",
-        assessmentId: "a1",
-        date: "2024-02-10",
-        angle: "Lateral",
-        url: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=400&h=600&fit=crop",
-    },
-];
+const PhotoComparison = dynamic(
+    () => import("@/components/profile/PhotoComparison").then((m) => m.PhotoComparison),
+    { ssr: false }
+);
 
-interface PageProps {
-    params: Promise<{ id: string }>;
-}
+export default function ClientPhotosPage() {
+    const params = useParams<{ id: string }>();
+    const id = params.id;
 
-export default function ClientPhotosPage({ params }: PageProps) {
-    const { id } = use(params);
-    const clientAssessments = mockAssessments.filter((a) => a.clientId === id);
+    const [evals, setEvals] = useState<Evaluation[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    // Group photos by date
-    const photosByDate = mockPhotos.reduce(
+    useEffect(() => {
+        if (!id) return;
+        evaluationsApi.getHistory(id)
+            .then(setEvals)
+            .catch(() => { })
+            .finally(() => setLoading(false));
+    }, [id]);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    // Collect all photos from evaluations
+    const allPhotos = evals.flatMap((ev) => {
+        if (!ev.photos) return [];
+
+        const photos = [];
+        const basePhoto = {
+            evalDate: ev.date,
+            evalId: ev.id,
+            weight: ev.bioimpedance?.weight,
+            fat: ev.bioimpedance?.bodyFat,
+            notes: ev.photos.notes,
+        };
+
+        if (ev.photos.frontUrl) {
+            photos.push({
+                ...basePhoto,
+                id: `${ev.photos.id}-front`,
+                imageUrl: ev.photos.frontUrl,
+                angle: "FRONT",
+            });
+        }
+        if (ev.photos.backUrl) {
+            photos.push({
+                ...basePhoto,
+                id: `${ev.photos.id}-back`,
+                imageUrl: ev.photos.backUrl,
+                angle: "BACK",
+            });
+        }
+        if (ev.photos.sideUrl) {
+            photos.push({
+                ...basePhoto,
+                id: `${ev.photos.id}-side`,
+                imageUrl: ev.photos.sideUrl,
+                angle: "SIDE",
+            });
+        }
+
+        return photos;
+    });
+
+    // Group photos by evaluation date
+    const photosByDate = allPhotos.reduce(
         (acc, photo) => {
-            if (!acc[photo.date]) acc[photo.date] = [];
-            acc[photo.date].push(photo);
+            const dateKey = new Date(photo.evalDate).toISOString().split("T")[0];
+            if (!acc[dateKey]) acc[dateKey] = [];
+            acc[dateKey].push(photo);
             return acc;
         },
-        {} as Record<string, typeof mockPhotos>
+        {} as Record<string, typeof allPhotos>
     );
 
     const sortedDates = Object.keys(photosByDate).sort(
         (a, b) => new Date(b).getTime() - new Date(a).getTime()
     );
 
-    // Get before/after for comparison (earliest frontal vs latest frontal)
-    const frontalPhotos = mockPhotos
-        .filter((p) => p.angle === "Frontal")
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    // Get before/after for comparison (earliest FRONT vs latest FRONT)
+    const frontPhotos = allPhotos
+        .filter((p) => p.angle === "FRONT")
+        .sort((a, b) => new Date(a.evalDate).getTime() - new Date(b.evalDate).getTime());
 
-    const beforePhoto = frontalPhotos[0];
-    const afterPhoto = frontalPhotos[frontalPhotos.length - 1];
+    const beforePhoto = frontPhotos[0];
+    const afterPhoto = frontPhotos.length > 1 ? frontPhotos[frontPhotos.length - 1] : null;
 
     return (
         <div className="space-y-6">
@@ -78,20 +110,20 @@ export default function ClientPhotosPage({ params }: PageProps) {
                         <ArrowLeftRight className="h-4 w-4 text-muted-foreground" />
                         <h3 className="text-sm font-semibold">Antes y Después</h3>
                         <Badge variant="secondary" className="text-[10px]">
-                            {new Date(beforePhoto.date).toLocaleDateString("es-CO", {
+                            {new Date(beforePhoto.evalDate).toLocaleDateString("es-CO", {
                                 month: "short",
                                 year: "numeric",
                             })}{" "}
                             vs{" "}
-                            {new Date(afterPhoto.date).toLocaleDateString("es-CO", {
+                            {new Date(afterPhoto.evalDate).toLocaleDateString("es-CO", {
                                 month: "short",
                                 year: "numeric",
                             })}
                         </Badge>
                     </div>
                     <PhotoComparison
-                        beforeImage={beforePhoto.url}
-                        afterImage={afterPhoto.url}
+                        beforeImage={beforePhoto.imageUrl}
+                        afterImage={afterPhoto.imageUrl}
                     />
                 </div>
             )}
@@ -119,10 +151,7 @@ export default function ClientPhotosPage({ params }: PageProps) {
                     <div className="space-y-6">
                         {sortedDates.map((date) => {
                             const photos = photosByDate[date];
-                            const assessment = clientAssessments.find(
-                                (a) =>
-                                    new Date(a.date).toISOString().split("T")[0] === date
-                            );
+                            const firstPhoto = photos[0];
 
                             return (
                                 <Card key={date}>
@@ -137,11 +166,11 @@ export default function ClientPhotosPage({ params }: PageProps) {
                                                         year: "numeric",
                                                     })}
                                                 </CardTitle>
-                                                {assessment && (
+                                                {firstPhoto && (
                                                     <CardDescription className="mt-1">
-                                                        Peso: {assessment.weight} kg
-                                                        {assessment.bodyFatPercentage &&
-                                                            ` · Grasa: ${assessment.bodyFatPercentage}%`}
+                                                        {firstPhoto.weight && `Peso: ${firstPhoto.weight} kg`}
+                                                        {firstPhoto.weight && firstPhoto.fat && " · "}
+                                                        {firstPhoto.fat && `Grasa: ${firstPhoto.fat}%`}
                                                     </CardDescription>
                                                 )}
                                             </div>
@@ -159,8 +188,8 @@ export default function ClientPhotosPage({ params }: PageProps) {
                                                     className="group relative aspect-[3/4] overflow-hidden rounded-lg border bg-muted"
                                                 >
                                                     <img
-                                                        src={photo.url}
-                                                        alt={`${photo.angle} - ${photo.date}`}
+                                                        src={photo.imageUrl}
+                                                        alt={`${photo.angle} - ${date}`}
                                                         className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                                                     />
                                                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2 pt-6">
@@ -168,7 +197,7 @@ export default function ClientPhotosPage({ params }: PageProps) {
                                                             variant="secondary"
                                                             className="bg-black/40 text-white text-[10px] backdrop-blur-sm border-0"
                                                         >
-                                                            {photo.angle}
+                                                            {photo.angle === "FRONT" ? "Frontal" : photo.angle === "BACK" ? "Posterior" : "Lateral"}
                                                         </Badge>
                                                     </div>
                                                 </div>

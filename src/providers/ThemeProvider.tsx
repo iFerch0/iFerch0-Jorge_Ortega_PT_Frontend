@@ -1,20 +1,20 @@
 "use client";
 
+import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { createContext, useContext, useEffect, useState } from "react";
 
-type ThemeColor = "blue" | "violet" | "rose" | "orange" | "green";
+type ThemeColor = "amber" | "teal" | "rose" | "blue" | "emerald";
 
 interface ThemeContextType {
     themeColor: ThemeColor;
     setThemeColor: (color: ThemeColor) => void;
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ThemeColorContext = createContext<ThemeContextType | undefined>(undefined);
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [themeColor, setThemeColor] = useState<ThemeColor>("blue");
+function ThemeColorProvider({ children }: { children: React.ReactNode }) {
+    const [themeColor, setThemeColor] = useState<ThemeColor>("amber");
 
-    // Load from local storage on mount
     useEffect(() => {
         const savedColor = localStorage.getItem("theme-color") as ThemeColor;
         if (savedColor) {
@@ -22,39 +22,54 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         }
     }, []);
 
-    // Apply theme color
     useEffect(() => {
         const root = document.documentElement;
-        const colors: Record<ThemeColor, { primary: string; ring: string }> = {
-            blue: { primary: "0.55 0.22 260", ring: "0.55 0.22 260" },
-            violet: { primary: "0.55 0.22 290", ring: "0.55 0.22 290" },
-            rose: { primary: "0.55 0.22 340", ring: "0.55 0.22 340" },
-            orange: { primary: "0.60 0.18 30", ring: "0.60 0.18 30" },
-            green: { primary: "0.60 0.18 145", ring: "0.60 0.18 145" },
+        const colors: Record<ThemeColor, { light: string; dark: string }> = {
+            amber:   { light: "0.58 0.16 65",  dark: "0.78 0.145 70" },
+            teal:    { light: "0.55 0.14 185",  dark: "0.72 0.15 185" },
+            rose:    { light: "0.55 0.20 10",   dark: "0.72 0.18 10" },
+            blue:    { light: "0.52 0.18 250",  dark: "0.68 0.17 250" },
+            emerald: { light: "0.55 0.16 155",  dark: "0.72 0.16 155" },
         };
 
         const selected = colors[themeColor];
         if (selected) {
-            root.style.setProperty("--primary", `oklch(${selected.primary})`);
-            root.style.setProperty("--ring", `oklch(${selected.ring})`);
-            root.style.setProperty("--sidebar-primary", `oklch(${selected.primary})`);
-            root.style.setProperty("--sidebar-ring", `oklch(${selected.ring})`);
+            root.style.setProperty("--primary", `oklch(${selected.dark})`);
+            root.style.setProperty("--ring", `oklch(${selected.dark})`);
+            root.style.setProperty("--sidebar-primary", `oklch(${selected.dark})`);
+            root.style.setProperty("--sidebar-ring", `oklch(${selected.dark})`);
+            root.style.setProperty("--chart-1", `oklch(${selected.dark})`);
 
             localStorage.setItem("theme-color", themeColor);
         }
     }, [themeColor]);
 
     return (
-        <ThemeContext.Provider value={{ themeColor, setThemeColor }}>
+        <ThemeColorContext.Provider value={{ themeColor, setThemeColor }}>
             {children}
-        </ThemeContext.Provider>
+        </ThemeColorContext.Provider>
     );
 }
 
-export function useTheme() {
-    const context = useContext(ThemeContext);
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+    return (
+        <NextThemesProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem={false}
+            disableTransitionOnChange
+        >
+            <ThemeColorProvider>
+                {children}
+            </ThemeColorProvider>
+        </NextThemesProvider>
+    );
+}
+
+export function useThemeColor() {
+    const context = useContext(ThemeColorContext);
     if (context === undefined) {
-        throw new Error("useTheme must be used within a ThemeProvider");
+        throw new Error("useThemeColor must be used within a ThemeProvider");
     }
     return context;
 }

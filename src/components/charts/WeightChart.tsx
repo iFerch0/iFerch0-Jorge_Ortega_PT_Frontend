@@ -11,27 +11,23 @@ import {
     ReferenceLine,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Assessment } from "@/lib/data/mock-assessments";
-import { useTheme } from "next-themes";
+import type { Evaluation } from "@/types/api";
 
 interface WeightChartProps {
-    data: Assessment[];
+    data: Evaluation[];
     goalWeight?: number;
 }
 
 export function WeightChart({ data, goalWeight }: WeightChartProps) {
-    const { theme } = useTheme();
-
-    // Sort data by date ascending for the chart
     const chartData = [...data]
+        .filter((item) => item.bioimpedance?.weight)
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
         .map((item) => ({
             date: new Date(item.date).toLocaleDateString("es-ES", {
                 day: "2-digit",
                 month: "short",
             }),
-            weight: item.weight,
-            originalDate: item.date,
+            weight: item.bioimpedance!.weight,
         }));
 
     return (
@@ -44,12 +40,7 @@ export function WeightChart({ data, goalWeight }: WeightChartProps) {
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart
                             data={chartData}
-                            margin={{
-                                top: 5,
-                                right: 30,
-                                left: 20,
-                                bottom: 5,
-                            }}
+                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                         >
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
                             <XAxis
@@ -84,7 +75,7 @@ export function WeightChart({ data, goalWeight }: WeightChartProps) {
                                         position: 'right',
                                         value: 'Meta',
                                         fill: 'hsl(var(--muted-foreground))',
-                                        fontSize: 12
+                                        fontSize: 12,
                                     }}
                                 />
                             )}
