@@ -22,6 +22,8 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Jorge Ortega PT — Personal Trainer",
   description: "Plataforma de seguimiento personalizado. Evaluaciones, progreso y resultados con tu entrenador personal Jorge Ortega.",
+  authors: [{ name: "Fernando Rhenals", url: "https://github.com/iFerch0" }],
+  creator: "Fernando Rhenals",
 };
 
 import { ThemeProvider } from "@/providers/ThemeProvider";
