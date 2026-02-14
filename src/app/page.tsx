@@ -380,11 +380,12 @@ export default function Home() {
             className="flex-1 relative"
           >
             <div className="aspect-square relative rounded-2xl overflow-hidden border border-white/10 bg-white/5">
-              {/* Placeholder for trainer image */}
-              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-tr from-amber-500/20 to-teal-500/20">
-                <Smartphone className="h-20 w-20 text-white/20" />
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
+              <img
+                src="https://res.cloudinary.com/duhsqdstl/image/upload/v1771034838/IMAGEN_1_-_SIN_FONDO_fmrebn.png"
+                alt="Jorge Ortega - Entrenador Personal"
+                className="absolute inset-0 h-full w-full object-cover object-top"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-8">
                 <div>
                   <p className="text-2xl font-bold">Más de 500+</p>
                   <p className="text-white/60">Clientes transformados</p>
