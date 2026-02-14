@@ -383,7 +383,7 @@ export default function Home() {
               <img
                 src="https://res.cloudinary.com/duhsqdstl/image/upload/v1771034838/IMAGEN_1_-_SIN_FONDO_fmrebn.png"
                 alt="Jorge Ortega - Entrenador Personal"
-                className="absolute inset-0 h-full w-full object-cover object-top"
+                className="absolute inset-0 h-full w-full object-contain object-bottom"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-8">
                 <div>
