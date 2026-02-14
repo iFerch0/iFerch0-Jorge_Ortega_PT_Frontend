@@ -9,6 +9,9 @@ import {
   ArrowRight,
   ChevronRight,
   CheckCircle2,
+  Instagram,
+  Facebook,
+  Smartphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -25,7 +28,6 @@ const benefits = [
   "Evaluaciones de bioimpedancia registradas en cada sesion",
   "Graficas de evolucion de peso y composicion corporal",
   "Fotos de progreso con comparativa antes y despues",
-  "Reportes PDF profesionales descargables",
   "Portal personal para que veas tu avance 24/7",
   "Historial completo de todas tus evaluaciones",
 ];
@@ -85,11 +87,11 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-3">
           <Button variant="ghost" className="text-white/70 hover:text-white hover:bg-white/5" asChild>
-            <Link href="/login">Iniciar Sesion</Link>
+            <a href="https://wa.me/573233848512" target="_blank" rel="noopener noreferrer">Solicitar Plan</a>
           </Button>
           <Button className="rounded-full bg-amber-400 text-black hover:bg-amber-300 font-medium px-6" asChild>
             <Link href="/login">
-              Acceder
+              Área de Clientes
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
@@ -133,7 +135,7 @@ export default function Home() {
             animate="visible"
             className="mt-6 max-w-2xl text-lg leading-relaxed text-white/50 md:text-xl"
           >
-            Seguimiento personalizado con evaluaciones de bioimpedancia, fotos de progreso y metricas detalladas. Cada sesion cuenta, cada avance se registra.
+            Plataforma exclusiva para mis clientes. Seguimiento personalizado con bioimpedancia, fotos de progreso y métricas detalladas.
           </motion.p>
 
           <motion.div
@@ -149,7 +151,7 @@ export default function Home() {
               asChild
             >
               <Link href="/login">
-                Acceder a Mi Cuenta
+                Ingresar al Portal
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -159,10 +161,10 @@ export default function Home() {
               className="rounded-full border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white font-medium px-8 h-13 text-base"
               asChild
             >
-              <Link href="/login">
-                Ya tengo cuenta
+              <a href="https://wa.me/573233848512" target="_blank" rel="noopener noreferrer">
+                Solicitar Asesoría
                 <ChevronRight className="ml-1 h-4 w-4" />
-              </Link>
+              </a>
             </Button>
           </motion.div>
         </div>
@@ -327,6 +329,72 @@ export default function Home() {
         </div>
       </section>
 
+      {/* About Jorge Ortega */}
+      <section className="relative z-10 mx-auto max-w-6xl px-6 py-24 md:px-12 bg-white/[0.02] border-y border-white/[0.06]">
+        <div className="flex flex-col md:flex-row items-center gap-12">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="flex-1 space-y-6"
+          >
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/20 bg-amber-400/10 px-4 py-1.5 text-sm text-amber-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+              Tu Entrenador
+            </div>
+            <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+              Jorge Ortega <span className="text-white/40">Personal Trainer</span>
+            </h2>
+            <div className="space-y-4 text-white/60 leading-relaxed">
+              <p>
+                Soy Jorge Ortega, entrenador personal certificado con más de 5 años de experiencia transformando vidas a través del fitness. Mi enfoque combina la ciencia del entrenamiento con la motivación necesaria para superar tus límites.
+              </p>
+              <p>
+                No solo te ayudo a entrenar, te enseño a entender tu cuerpo. Con mi metodología, cada repetición cuenta y cada comida suma a tu objetivo. Mi misión es que logres resultados sostenibles y reales, sin fórmulas mágicas, solo trabajo inteligente y constancia.
+              </p>
+            </div>
+
+            <div className="flex gap-4 pt-4">
+              <Button variant="outline" size="icon" className="rounded-full border-white/10 hover:bg-white/10 hover:text-amber-400" asChild>
+                <a href="https://www.instagram.com/jorgeortega_ptrainer/" target="_blank" rel="noopener noreferrer">
+                  <Instagram className="h-5 w-5" />
+                </a>
+              </Button>
+              <Button variant="outline" size="icon" className="rounded-full border-white/10 hover:bg-white/10 hover:text-amber-400" asChild>
+                <a href="https://www.facebook.com/joelorpi" target="_blank" rel="noopener noreferrer">
+                  <Facebook className="h-5 w-5" />
+                </a>
+              </Button>
+              <Button variant="outline" size="icon" className="rounded-full border-white/10 hover:bg-white/10 hover:text-amber-400" asChild>
+                <a href="https://wa.me/573233848512" target="_blank" rel="noopener noreferrer">
+                  <Smartphone className="h-5 w-5" />
+                </a>
+              </Button>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="flex-1 relative"
+          >
+            <div className="aspect-square relative rounded-2xl overflow-hidden border border-white/10 bg-white/5">
+              {/* Placeholder for trainer image */}
+              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-tr from-amber-500/20 to-teal-500/20">
+                <Smartphone className="h-20 w-20 text-white/20" />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
+                <div>
+                  <p className="text-2xl font-bold">Más de 500+</p>
+                  <p className="text-white/60">Clientes transformados</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="relative z-10 mx-auto max-w-6xl px-6 py-24 md:px-12">
         <motion.div
@@ -351,9 +419,20 @@ export default function Home() {
               asChild
             >
               <Link href="/login">
-                Acceder a Mi Cuenta
+                Ingresar al Portal
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              className="rounded-full border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white font-medium px-8 h-13 text-base"
+              asChild
+            >
+              <a href="https://wa.me/573233848512" target="_blank" rel="noopener noreferrer">
+                Contactar por WhatsApp
+                <Smartphone className="ml-2 h-4 w-4" />
+              </a>
             </Button>
           </div>
         </motion.div>
@@ -374,6 +453,6 @@ export default function Home() {
           </p>
         </div>
       </footer>
-    </div>
+    </div >
   );
 }
