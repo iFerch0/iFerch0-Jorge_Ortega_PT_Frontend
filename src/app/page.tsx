@@ -385,12 +385,6 @@ export default function Home() {
                 alt="Jorge Ortega - Entrenador Personal"
                 className="absolute inset-0 h-full w-full object-cover object-top"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-8">
-                <div>
-                  <p className="text-2xl font-bold">Más de 500+</p>
-                  <p className="text-white/60">Clientes transformados</p>
-                </div>
-              </div>
             </div>
           </motion.div>
         </div>
