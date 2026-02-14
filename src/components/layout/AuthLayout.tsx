@@ -19,19 +19,20 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
     return (
         <div className="flex min-h-screen w-full">
             {/* Left — Form side */}
-            <div className="relative flex flex-1 flex-col items-center justify-center px-6 py-12 bg-background">
+            <div className="relative flex flex-1 flex-col items-center justify-center px-6 py-12 bg-background overflow-hidden">
                 {/* Ambient glow — warm presence that connects with the brand panel */}
                 <div className="pointer-events-none absolute inset-0 overflow-hidden">
-                    <div className="absolute -top-[30%] -right-[20%] h-[500px] w-[500px] rounded-full bg-primary/[0.04] blur-[120px]" />
-                    <div className="absolute -bottom-[20%] -left-[15%] h-[400px] w-[400px] rounded-full bg-primary/[0.03] blur-[100px]" />
+                    <div className="absolute -top-[20%] -right-[10%] h-[600px] w-[600px] rounded-full bg-primary/10 blur-[130px]" />
+                    <div className="absolute -bottom-[10%] -left-[10%] h-[500px] w-[500px] rounded-full bg-amber-500/10 blur-[120px]" />
+                    <div className="absolute top-[40%] left-[20%] h-[300px] w-[300px] rounded-full bg-teal-500/5 blur-[100px]" />
                 </div>
 
                 {/* Subtle dot pattern */}
                 <div
-                    className="pointer-events-none absolute inset-0 opacity-[0.02]"
+                    className="pointer-events-none absolute inset-0 opacity-[0.03]"
                     style={{
                         backgroundImage: `radial-gradient(circle, currentColor 1px, transparent 1px)`,
-                        backgroundSize: "24px 24px",
+                        backgroundSize: "32px 32px",
                     }}
                 />
 
