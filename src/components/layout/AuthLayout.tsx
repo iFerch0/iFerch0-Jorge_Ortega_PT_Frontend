@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Dumbbell, TrendingUp, Camera } from "lucide-react";
 
@@ -43,10 +44,13 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
                         className="flex justify-center"
                     >
                         <Link href="/" className="inline-block">
-                            <img
+                            <Image
                                 src="https://res.cloudinary.com/duhsqdstl/image/upload/v1770782105/LOGO_CON_TRAZO_-_TRANSPARENTE_ytfdn6.png"
                                 alt="Jorge Ortega PT"
+                                width={176}
+                                height={60}
                                 className="h-auto w-44"
+                                priority
                             />
                         </Link>
                     </motion.div>

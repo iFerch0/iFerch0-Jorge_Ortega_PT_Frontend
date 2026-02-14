@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Settings, Camera, Activity, FileText, Loader2 } from "lucide-react";
+import { ArrowLeft, Camera, Activity, FileText, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -15,8 +15,16 @@ interface ClientLayoutProps {
     children: React.ReactNode;
 }
 
+function getActiveTab(pathname: string, id: string): string {
+    if (pathname.includes("/assessments")) return "assessments";
+    if (pathname.includes("/photos")) return "photos";
+    if (pathname.includes("/new-assessment")) return "assessments";
+    return "overview";
+}
+
 export default function ClientLayout({ children }: ClientLayoutProps) {
     const params = useParams<{ id: string }>();
+    const pathname = usePathname();
     const id = params.id;
 
     const [client, setClient] = useState<Client | null>(null);
@@ -57,9 +65,11 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
         return `${first.charAt(0)}${last.charAt(0)}`.toUpperCase();
     };
 
+    const activeTab = getActiveTab(pathname, id);
+
     return (
         <div className="flex flex-col gap-6">
-            {/* Header with Back Button and Actions */}
+            {/* Header with Back Button */}
             <div className="flex items-center gap-4">
                 <Button variant="ghost" size="icon" asChild>
                     <Link href="/dashboard/clients">
@@ -68,12 +78,8 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                     </Link>
                 </Button>
                 <div className="flex-1">
-                    <h1 className="text-2xl font-bold tracking-tight">Perfil del Cliente</h1>
+                    <h1 className="font-display text-2xl font-bold tracking-tight">Perfil del Cliente</h1>
                 </div>
-                <Button variant="outline" size="sm">
-                    <Settings className="mr-2 h-4 w-4" />
-                    Configuración
-                </Button>
             </div>
 
             {/* Client Summary Card */}
@@ -110,7 +116,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
             {/* Navigation Tabs */}
             <div className="space-y-4">
-                <Tabs defaultValue="overview" className="w-full">
+                <Tabs value={activeTab} className="w-full">
                     <TabsList>
                         <TabsTrigger value="overview" asChild>
                             <Link href={`/dashboard/clients/${id}`}>

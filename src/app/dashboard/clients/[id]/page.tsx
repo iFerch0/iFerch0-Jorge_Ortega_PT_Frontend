@@ -127,7 +127,7 @@ export default function ClientProfilePage() {
                                 <stat.icon className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="font-mono text-2xl font-bold tabular-nums">{stat.value}</div>
+                                <div className={`font-bold ${stat.title === "Objetivo Principal" ? "text-sm leading-snug line-clamp-2" : "text-2xl font-mono tabular-nums"}`}>{stat.value}</div>
                                 <div className="flex items-center gap-1.5 mt-1">
                                     {stat.delta !== null && (
                                         <Badge
@@ -154,9 +154,13 @@ export default function ClientProfilePage() {
 
             {/* Charts */}
             {sortedEvals.length > 0 && (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                    <WeightChart data={sortedEvals} />
-                    <Card className="col-span-full lg:col-span-3">
+                <div className="space-y-4">
+                    <div className="grid gap-4 lg:grid-cols-2">
+                        <WeightChart data={sortedEvals} />
+                        <CompositionChart data={sortedEvals} />
+                    </div>
+
+                    <Card>
                         <CardHeader>
                             <CardTitle>Últimas Observaciones</CardTitle>
                         </CardHeader>
@@ -185,7 +189,6 @@ export default function ClientProfilePage() {
                             </div>
                         </CardContent>
                     </Card>
-                    <CompositionChart data={sortedEvals} />
                 </div>
             )}
 

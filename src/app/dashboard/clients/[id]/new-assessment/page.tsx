@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { AssessmentForm } from "@/components/assessments/AssessmentForm";
-import { evaluations as evaluationsApi } from "@/lib/api";
+import { evaluations as evaluationsApi, clients as clientsApi } from "@/lib/api";
 import type { Evaluation } from "@/types/api";
 
 export default function NewAssessmentPage() {
@@ -20,11 +20,7 @@ export default function NewAssessmentPage() {
 
         Promise.all([
             evaluationsApi.getHistory(id),
-            // We need to import 'clients' from api to fetch client details.
-            // But wait, it's not imported. Let's assume we'll fix imports or use explicit call.
-            // Better to just update imports too.
-            // For now, let's just make the calls.
-            import("@/lib/api").then(m => m.clients.get(id))
+            clientsApi.get(id),
         ])
             .then(([evals, client]) => {
                 const sorted = [...evals].sort(

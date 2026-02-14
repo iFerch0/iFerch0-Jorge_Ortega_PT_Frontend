@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { Camera, Calendar, ArrowLeftRight, Loader2 } from "lucide-react";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { evaluations as evaluationsApi } from "@/lib/api";
@@ -187,10 +188,12 @@ export default function ClientPhotosPage() {
                                                     key={photo.id}
                                                     className="group relative aspect-[3/4] overflow-hidden rounded-lg border bg-muted"
                                                 >
-                                                    <img
+                                                    <Image
                                                         src={photo.imageUrl}
                                                         alt={`${photo.angle} - ${date}`}
-                                                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                        fill
+                                                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                                        sizes="(max-width: 640px) 50vw, 33vw"
                                                     />
                                                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2 pt-6">
                                                         <Badge

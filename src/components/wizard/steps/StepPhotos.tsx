@@ -44,6 +44,7 @@ function PhotoSlot({ label, file, onDrop, onRemove, preview }: PhotoSlotProps) {
                         onClick={onRemove}
                         className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1.5 hover:bg-red-500 transition-colors"
                         type="button"
+                        aria-label={`Eliminar foto ${label}`}
                     >
                         <X className="h-3.5 w-3.5" />
                     </button>
@@ -51,11 +52,10 @@ function PhotoSlot({ label, file, onDrop, onRemove, preview }: PhotoSlotProps) {
             ) : (
                 <div
                     {...getRootProps()}
-                    className={`aspect-[3/4] w-full border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors gap-3 ${
-                        isDragActive
+                    className={`aspect-[3/4] w-full border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors gap-3 ${isDragActive
                             ? "border-primary bg-primary/10"
                             : "border-muted-foreground/25 hover:border-primary/50"
-                    }`}
+                        }`}
                 >
                     <input {...getInputProps()} />
                     <div className="rounded-full bg-muted p-3">
@@ -156,7 +156,7 @@ export function StepPhotos() {
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Atrás
                     </Button>
-                    <Button onClick={handleNext}>
+                    <Button onClick={handleNext} size="lg">
                         {hasAnyPhoto ? "Siguiente" : "Saltar este paso"}
                         <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>

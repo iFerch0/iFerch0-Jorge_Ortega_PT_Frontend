@@ -3,6 +3,7 @@
 import { useWizardStore } from "@/store/wizard-store";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface WizardLayoutProps {
     children: React.ReactNode;
@@ -61,8 +62,10 @@ export function WizardLayout({
                                 </div>
                                 <span
                                     className={cn(
-                                        "absolute -bottom-6 w-32 text-center text-[10px] font-medium transition-colors duration-300 md:text-xs",
-                                        isCurrent ? "text-primary" : "text-muted-foreground"
+                                        "absolute -bottom-6 text-center text-[10px] font-medium transition-colors duration-300 md:w-32 md:text-xs",
+                                        isCurrent
+                                            ? "text-primary w-max"
+                                            : "text-muted-foreground hidden md:block"
                                     )}
                                 >
                                     {step.name}
@@ -81,15 +84,24 @@ export function WizardLayout({
             </div>
 
             {/* Content */}
-            <div className="space-y-6">
-                <div className="text-center md:text-left">
-                    <h2 className="font-display text-2xl font-bold tracking-tight">{title}</h2>
-                    <p className="text-muted-foreground">{description}</p>
-                </div>
-                <div className="rounded-lg border bg-card p-6 shadow-sm md:p-8">
-                    {children}
-                </div>
-            </div>
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={currentStep}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -12 }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                    className="space-y-6"
+                >
+                    <div className="text-center md:text-left">
+                        <h2 className="font-display text-2xl font-bold tracking-tight">{title}</h2>
+                        <p className="text-muted-foreground">{description}</p>
+                    </div>
+                    <div className="rounded-lg border bg-card p-6 shadow-sm md:p-8">
+                        {children}
+                    </div>
+                </motion.div>
+            </AnimatePresence>
         </div>
     );
 }

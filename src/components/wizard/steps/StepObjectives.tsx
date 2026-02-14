@@ -16,6 +16,13 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { WizardLayout } from "../WizardLayout";
 import { Dumbbell, TrendingUp, Activity, User } from "lucide-react";
@@ -69,7 +76,7 @@ export function StepObjectives() {
                                                 <RadioGroupItem value={item.value} id={item.value} className="peer sr-only" />
                                                 <Label
                                                     htmlFor={item.value}
-                                                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                                                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary peer-focus-visible:border-primary peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-ring"
                                                 >
                                                     <item.icon className="mb-3 h-6 w-6" />
                                                     {item.label}
@@ -182,11 +189,3 @@ export function StepObjectives() {
         </WizardLayout>
     );
 }
-// Import Select components as they were missing in the previous context but used here
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";

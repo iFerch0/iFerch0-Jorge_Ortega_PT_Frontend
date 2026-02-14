@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import Image from "next/image";
 import { Menu, Dumbbell, Users, Settings, LogOut, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
@@ -87,10 +88,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
           {/* Logo */}
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <Link href="/" className="flex items-center gap-2 font-semibold text-primary">
-              <img
+              <Image
                 src="https://res.cloudinary.com/duhsqdstl/image/upload/v1770782105/LOGO_CON_TRAZO_-_TRANSPARENTE_ytfdn6.png"
                 alt="Jorge Ortega PT"
+                width={150}
+                height={32}
                 className="h-8 w-auto"
+                priority
               />
             </Link>
           </div>
@@ -104,11 +108,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all ${
-                      active
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all ${active
                         ? "bg-primary/10 text-primary font-semibold border-l-[3px] border-primary -ml-px"
                         : "text-muted-foreground hover:text-primary hover:bg-muted/50"
-                    }`}
+                      }`}
                   >
                     <item.icon className="h-4 w-4" />
                     {item.name}
@@ -169,10 +172,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
               <SheetTitle>Menu</SheetTitle>
               <nav className="grid gap-2 text-lg font-medium">
                 <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-primary">
-                  <img
+                  <Image
                     src="https://res.cloudinary.com/duhsqdstl/image/upload/v1770782105/LOGO_CON_TRAZO_-_TRANSPARENTE_ytfdn6.png"
                     alt="Jorge Ortega PT"
+                    width={150}
+                    height={32}
                     className="h-8 w-auto"
+                    priority
                   />
                   <span className="sr-only">Jorge Ortega PT</span>
                 </Link>
@@ -181,9 +187,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
                     key={item.name}
                     href={item.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 hover:text-foreground ${
-                      isActive(item.href) ? "bg-muted text-foreground font-semibold" : "text-muted-foreground"
-                    }`}
+                    className={`mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 hover:text-foreground ${isActive(item.href) ? "bg-muted text-foreground font-semibold" : "text-muted-foreground"
+                      }`}
                   >
                     <item.icon className="h-5 w-5" />
                     {item.name}

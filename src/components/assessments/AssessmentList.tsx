@@ -26,7 +26,7 @@ export function AssessmentList({ assessments, clientId }: AssessmentListProps) {
 
     return (
         <div className="space-y-3">
-            <div className="relative space-y-3">
+            <div className="relative flex flex-col gap-3">
                 {sortedAssessments.map((assessment, index) => {
                     const bio = assessment.bioimpedance;
                     const prevBio = sortedAssessments[index + 1]?.bioimpedance;

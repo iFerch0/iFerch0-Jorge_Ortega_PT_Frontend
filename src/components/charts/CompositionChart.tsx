@@ -33,7 +33,7 @@ export function CompositionChart({ data }: CompositionChartProps) {
     if (chartData.length === 0) return null;
 
     return (
-        <Card className="col-span-4 lg:col-span-3">
+        <Card>
             <CardHeader>
                 <CardTitle>Composición Corporal</CardTitle>
             </CardHeader>

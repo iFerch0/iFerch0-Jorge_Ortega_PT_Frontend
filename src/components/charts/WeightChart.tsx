@@ -31,7 +31,7 @@ export function WeightChart({ data, goalWeight }: WeightChartProps) {
         }));
 
     return (
-        <Card className="col-span-4">
+        <Card>
             <CardHeader>
                 <CardTitle>Progreso de Peso</CardTitle>
             </CardHeader>

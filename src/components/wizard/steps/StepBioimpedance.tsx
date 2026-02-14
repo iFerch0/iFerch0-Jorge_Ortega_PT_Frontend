@@ -16,11 +16,40 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { WizardLayout } from "../WizardLayout";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useDropzone } from "react-dropzone";
+import { UploadCloud, X, FileImage } from "lucide-react";
+import Image from "next/image";
 
 export function StepBioimpedance() {
     const { data, setBioimpedance, nextStep, prevStep } = useWizardStore();
     const [file, setFile] = useState<File | null>(null);
+    const [preview, setPreview] = useState<string | null>(null);
+
+    const onDrop = useCallback((accepted: File[]) => {
+        const f = accepted[0];
+        if (!f) return;
+        setFile(f);
+        setPreview(URL.createObjectURL(f));
+    }, []);
+
+    const removeFile = useCallback(() => {
+        if (preview) URL.revokeObjectURL(preview);
+        setFile(null);
+        setPreview(null);
+    }, [preview]);
+
+    useEffect(() => {
+        return () => { if (preview) URL.revokeObjectURL(preview); };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+        onDrop,
+        accept: { "image/*": [".jpeg", ".png", ".jpg", ".webp"] },
+        maxFiles: 1,
+        multiple: false,
+    });
 
     const form = useForm<Bioimpedance>({
         resolver: zodResolver(bioimpedanceSchema) as any,
@@ -47,12 +76,6 @@ export function StepBioimpedance() {
             form.setValue("bmi", parseFloat(bmi.toFixed(1)));
         }
     }, [weight, height, form]);
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            setFile(e.target.files[0]);
-        }
-    };
 
     const onSubmit = (values: Bioimpedance) => {
         // Guardamos el archivo en el objeto de valores, aunque no persistirá en localStorage
@@ -237,23 +260,58 @@ export function StepBioimpedance() {
                     </div>
 
                     {/* Image Upload for Ticket */}
-                    <div className="grid gap-2">
+                    <div className="space-y-2">
                         <FormLabel>Foto del Ticket de Bioimpedancia (Opcional)</FormLabel>
-                        <Input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleFileChange}
-                        />
-                        <FormDescription>
-                            Sube una foto de la hoja de resultados impresa.
-                        </FormDescription>
+                        {preview ? (
+                            <div className="relative rounded-lg border overflow-hidden bg-muted/30">
+                                <div className="flex items-center gap-3 p-3">
+                                    <div className="relative h-20 w-16 shrink-0 rounded-md overflow-hidden border">
+                                        <Image src={preview} alt="Ticket" fill className="object-cover" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2">
+                                            <FileImage className="h-4 w-4 text-primary shrink-0" />
+                                            <span className="text-sm font-medium truncate">{file?.name}</span>
+                                        </div>
+                                        <span className="text-xs text-muted-foreground">
+                                            {file ? `${(file.size / 1024).toFixed(0)} KB` : ""}
+                                        </span>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={removeFile}
+                                        className="shrink-0 rounded-full p-1.5 hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div
+                                {...getRootProps()}
+                                className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                                    isDragActive
+                                        ? "border-primary bg-primary/5"
+                                        : "border-muted-foreground/25 hover:border-primary/50"
+                                }`}
+                            >
+                                <input {...getInputProps()} />
+                                <UploadCloud className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                                <p className="text-sm text-muted-foreground">
+                                    {isDragActive ? "Suelta aquí" : "Arrastra o haz clic para subir"}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    Foto de la hoja de resultados impresa
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex justify-between pt-4">
                         <Button type="button" variant="outline" onClick={prevStep}>
                             Atrás
                         </Button>
-                        <Button type="submit">Siguiente</Button>
+                        <Button type="submit" size="lg">Siguiente</Button>
                     </div>
                 </form>
             </Form>

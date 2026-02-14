@@ -10,6 +10,55 @@ import { useState, useEffect } from "react";
 import { User, Target, Activity, Calendar, Scale, Camera } from "lucide-react";
 import Image from "next/image";
 
+const goalLabels: Record<string, string> = {
+    lose_weight: "Perder Peso",
+    gain_muscle: "Ganar Músculo",
+    maintain: "Mantenerse",
+    improve_endurance: "Mejorar Resistencia",
+};
+
+const experienceLabels: Record<string, string> = {
+    beginner: "Principiante (0-6 meses)",
+    intermediate: "Intermedio (6m - 2 años)",
+    advanced: "Avanzado (+2 años)",
+};
+
+const activityLabels: Record<string, string> = {
+    sedentary: "Sedentario",
+    light: "Ligero",
+    moderate: "Moderado",
+    active: "Activo",
+    very_active: "Muy Activo",
+};
+
+const dayLabels: Record<string, string> = {
+    monday: "Lunes",
+    tuesday: "Martes",
+    wednesday: "Miércoles",
+    thursday: "Jueves",
+    friday: "Viernes",
+    saturday: "Sábado",
+    sunday: "Domingo",
+};
+
+const durationLabels: Record<string, string> = {
+    "30_min": "30 Minutos",
+    "45_min": "45 Minutos",
+    "60_min": "60 Minutos",
+    "90_min_plus": "+90 Minutos",
+};
+
+const equipmentLabels: Record<string, string> = {
+    gym_full: "Gimnasio Completo",
+    dumbbells: "Mancuernas",
+    barbell: "Barra y Discos",
+    bands: "Bandas Elásticas",
+    bodyweight: "Solo Peso Corporal",
+    cardio_machine: "Máquina de Cardio",
+};
+
+const genderMap: Record<string, string> = { male: "MALE", female: "FEMALE", other: "OTHER" };
+
 export function StepReview() {
     const { data, photos, resetWizard, prevStep } = useWizardStore();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,7 +80,7 @@ export function StepReview() {
                 email: data.personalData?.email,
                 phone: data.personalData?.phone,
                 birthDate: approximateBirthDate,
-                gender: data.personalData?.gender?.toUpperCase(), // API expects uppercase probably, checking docs: MALE/FEMALE
+                gender: genderMap[data.personalData?.gender || "other"] || "OTHER",
                 height: data.personalData?.height,
                 objectives: [{ content: data.objectives?.goal }, { content: data.objectives?.notes }].filter(o => o.content),
                 pathologies: [
@@ -39,24 +88,6 @@ export function StepReview() {
                     { name: data.physicalAssessment?.medicalConditions, notes: "Condiciones Médicas" }
                 ].filter(p => p.name)
             };
-
-            // Fix gender mapping if needed 
-            if (clientPayload.gender === 'MALE') clientPayload.gender = 'MALE';
-            if (clientPayload.gender === 'FEMALE') clientPayload.gender = 'FEMALE';
-            if (clientPayload.gender === 'OTHER') clientPayload.gender = 'OTHER';
-            // Assuming API handles case-insensitivity or standardizing:
-            // "male" -> "MALE"
-            if (clientPayload.gender === 'MALE' || clientPayload.gender === 'FEMALE') {
-                // ok
-            } else {
-                // map keys
-                if (data.personalData?.gender === 'male') clientPayload.gender = 'MALE';
-                else if (data.personalData?.gender === 'female') clientPayload.gender = 'FEMALE';
-                else clientPayload.gender = 'OTHER';
-            }
-
-
-            console.log("Creating Client...", clientPayload);
             const clientResponse = await fetch('/api/clients', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -69,11 +100,9 @@ export function StepReview() {
             }
 
             const clientData = await clientResponse.json();
-            const clientId = clientData.id || clientData.data?.id; // Adjust based on actual API response structure
+            const clientId = clientData.id || clientData.data?.id;
 
             if (!clientId) throw new Error("No se recibió ID del cliente creado");
-
-            console.log("Client Created, ID:", clientId);
 
             // 2. Crear Evaluación Inicial (Bioimpedancia + Fotos)
             const evaluationFormData = new FormData();
@@ -102,7 +131,6 @@ export function StepReview() {
             if (photos.side) evaluationFormData.append('side', photos.side);
             if (photos.back) evaluationFormData.append('back', photos.back);
 
-            console.log("Creating Initial Evaluation...");
             const evalResponse = await fetch('/api/evaluations', {
                 method: 'POST',
                 body: evaluationFormData
@@ -119,19 +147,14 @@ export function StepReview() {
             resetWizard();
             router.push("/dashboard/clients");
 
-        } catch (error: any) {
+        } catch (error) {
             console.error(error);
-            toast.error(error.message || "Error inesperado al procesar solicitud");
+            const message = error instanceof Error ? error.message : "Error inesperado al procesar solicitud";
+            toast.error(message);
         } finally {
             setIsSubmitting(false);
         }
     }
-
-    // Helper to display arrays nicely
-    const formatList = (list?: string[]) => {
-        if (!list || list.length === 0) return "N/A";
-        return list.join(", ");
-    };
 
     const photoLabels = { front: "Frontal", side: "Lateral", back: "Espalda" } as const;
     const hasAnyPhoto = photos.front || photos.side || photos.back;
@@ -182,9 +205,9 @@ export function StepReview() {
                         <h3>Objetivos</h3>
                     </div>
                     <div className="text-sm grid gap-1 text-muted-foreground">
-                        <p><span className="font-medium text-foreground">Meta:</span> {data.objectives?.goal}</p>
-                        <p><span className="font-medium text-foreground">Experiencia:</span> {data.objectives?.experienceLevel}</p>
-                        <p><span className="font-medium text-foreground">Actividad:</span> {data.objectives?.activityLevel}</p>
+                        <p><span className="font-medium text-foreground">Meta:</span> {goalLabels[data.objectives?.goal || ""] || data.objectives?.goal}</p>
+                        <p><span className="font-medium text-foreground">Experiencia:</span> {experienceLabels[data.objectives?.experienceLevel || ""] || data.objectives?.experienceLevel}</p>
+                        <p><span className="font-medium text-foreground">Actividad:</span> {activityLabels[data.objectives?.activityLevel || ""] || data.objectives?.activityLevel}</p>
                         <p><span className="font-medium text-foreground">Notas:</span> {data.objectives?.notes || "Ninguna"}</p>
                     </div>
                 </div>
@@ -212,8 +235,8 @@ export function StepReview() {
                         <p><span className="font-medium text-foreground">IMC:</span> {data.bioimpedance?.bmi || "N/A"}</p>
                         <p><span className="font-medium text-foreground">Grasa Corp:</span> {data.bioimpedance?.bodyFat ? `${data.bioimpedance.bodyFat}%` : "N/A"}</p>
                         <p><span className="font-medium text-foreground">Masa Musc:</span> {data.bioimpedance?.muscleMass ? `${data.bioimpedance.muscleMass}kg` : "N/A"}</p>
-                        <p><span className="font-medium text-foreground">Grasa Visc:</span> {data.bioimpedance?.visceralFat || "N/A"}</p>
-                        <p><span className="font-medium text-foreground">Agua Corp:</span> {data.bioimpedance?.bodyWater ? `${data.bioimpedance.bodyWater}%` : "N/A"}</p>
+                        <p><span className="font-medium text-foreground">Grasa Visc:</span> {data.bioimpedance?.visceralFat ? `${data.bioimpedance.visceralFat}%` : "N/A"}</p>
+                        <p><span className="font-medium text-foreground">Agua Corp:</span> {data.bioimpedance?.bodyWater ? `${data.bioimpedance.bodyWater}L` : "N/A"}</p>
                         <p><span className="font-medium text-foreground">M.M.E:</span> {data.bioimpedance?.skeletalMuscleMass ? `${data.bioimpedance.skeletalMuscleMass}kg` : "N/A"}</p>
                         <p><span className="font-medium text-foreground">Metab. Basal:</span> {data.bioimpedance?.basalMetabolism ? `${data.bioimpedance.basalMetabolism}kcal` : "N/A"}</p>
                         <p><span className="font-medium text-foreground">Ticket Imagen:</span> {data.bioimpedance?.bioimpedanceImage ? "Sí (Adjunta)" : "No"}</p>
@@ -255,9 +278,9 @@ export function StepReview() {
                         <h3>Disponibilidad</h3>
                     </div>
                     <div className="text-sm grid gap-1 text-muted-foreground">
-                        <p><span className="font-medium text-foreground">Días:</span> {formatList(data.availability?.trainingDays)}</p>
-                        <p><span className="font-medium text-foreground">Duración:</span> {data.availability?.trainingDuration}</p>
-                        <p><span className="font-medium text-foreground">Equipo:</span> {formatList(data.availability?.equipment)}</p>
+                        <p><span className="font-medium text-foreground">Días:</span> {data.availability?.trainingDays?.map(d => dayLabels[d] || d).join(", ") || "N/A"}</p>
+                        <p><span className="font-medium text-foreground">Duración:</span> {durationLabels[data.availability?.trainingDuration || ""] || data.availability?.trainingDuration}</p>
+                        <p><span className="font-medium text-foreground">Equipo:</span> {data.availability?.equipment?.map(e => equipmentLabels[e] || e).join(", ") || "N/A"}</p>
                     </div>
                 </div>
             </div>
