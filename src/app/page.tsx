@@ -381,9 +381,9 @@ export default function Home() {
           >
             <div className="aspect-square relative rounded-2xl overflow-hidden border border-white/10 bg-white/5">
               <img
-                src="https://res.cloudinary.com/duhsqdstl/image/upload/v1771036408/WhatsApp_Image_2026-02-13_at_9.17.07_PM_s4vzvb.jpg"
+                src="https://res.cloudinary.com/duhsqdstl/image/upload/v1771036554/WhatsApp_Image_2026-02-13_at_9.17.07_PM_hiqrkc.jpg"
                 alt="Jorge Ortega - Entrenador Personal"
-                className="absolute inset-0 h-full w-full object-cover object-top"
+                className="absolute inset-0 h-full w-full object-cover object-[center_15%]"
               />
             </div>
           </motion.div>
