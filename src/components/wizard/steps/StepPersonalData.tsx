@@ -31,6 +31,7 @@ export function StepPersonalData() {
         defaultValues: data.personalData || {
             firstName: "",
             lastName: "",
+            cedula: "",
             email: "",
             phone: "",
             age: 0,
@@ -84,16 +85,12 @@ export function StepPersonalData() {
                     <div className="grid gap-4 md:grid-cols-2">
                         <FormField
                             control={form.control}
-                            name="email"
+                            name="cedula"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Email</FormLabel>
+                                    <FormLabel>Cédula / Identificación</FormLabel>
                                     <FormControl>
-                                        <Input
-                                            type="email"
-                                            placeholder="juan@ejemplo.com"
-                                            {...field}
-                                        />
+                                        <Input placeholder="1234567890" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

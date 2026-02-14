@@ -77,7 +77,8 @@ export function StepReview() {
             const clientPayload = {
                 firstName: data.personalData?.firstName,
                 lastName: data.personalData?.lastName,
-                email: data.personalData?.email,
+                cedula: data.personalData?.cedula,
+                email: data.personalData?.email || "",
                 phone: data.personalData?.phone,
                 birthDate: approximateBirthDate,
                 gender: genderMap[data.personalData?.gender || "other"] || "OTHER",
@@ -191,7 +192,7 @@ export function StepReview() {
                     </div>
                     <div className="text-sm grid gap-1 text-muted-foreground">
                         <p><span className="font-medium text-foreground">Nombre:</span> {data.personalData?.firstName} {data.personalData?.lastName}</p>
-                        <p><span className="font-medium text-foreground">Email:</span> {data.personalData?.email}</p>
+                        <p><span className="font-medium text-foreground">Cédula:</span> {data.personalData?.cedula}</p>
                         <p><span className="font-medium text-foreground">Teléfono:</span> {data.personalData?.phone}</p>
                         <p><span className="font-medium text-foreground">Edad:</span> {data.personalData?.age} años</p>
                         <p><span className="font-medium text-foreground">Peso/Altura:</span> {data.personalData?.weight}kg / {data.personalData?.height}cm</p>

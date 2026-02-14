@@ -97,7 +97,7 @@ export const auth = {
       return {
         ok: false,
         error: errorParam === "CredentialsSignin"
-          ? "Email o contraseña incorrectos"
+          ? "Credenciales incorrectas. Verifica tu email/cédula y contraseña"
           : `Error de autenticación: ${errorParam}`,
       };
     }

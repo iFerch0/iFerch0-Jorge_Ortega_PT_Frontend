@@ -3,7 +3,8 @@ import * as z from "zod";
 export const personalDataSchema = z.object({
     firstName: z.string().min(2, "El nombre es requerido"),
     lastName: z.string().min(2, "El apellido es requerido"),
-    email: z.string().email("Email inválido"),
+    cedula: z.string().min(5, "La cédula es requerida"),
+    email: z.string().email("Email inválido").optional().or(z.literal("")),
     phone: z.string().min(10, "Teléfono inválido"),
     age: z.coerce.number().min(10, "Edad inválida").max(100),
     gender: z.enum(["male", "female", "other"]),

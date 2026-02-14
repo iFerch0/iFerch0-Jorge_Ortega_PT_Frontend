@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
-import { Loader2, Eye, EyeOff, Mail, Lock, ArrowRight, Info } from "lucide-react";
+import { Loader2, Eye, EyeOff, Mail, Lock, ArrowRight, Info, IdCard } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,8 +22,8 @@ import {
 import { auth } from "@/lib/api";
 
 const loginSchema = z.object({
-    email: z.string().email({ message: "Email inválido" }),
-    password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres" }),
+    email: z.string().min(1, { message: "Email o cédula es requerido" }),
+    password: z.string().min(1, { message: "La contraseña es requerida" }),
 });
 
 export default function LoginPage() {
@@ -75,11 +75,11 @@ export default function LoginPage() {
                         name="email"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Email</FormLabel>
+                                <FormLabel className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Email o Cédula</FormLabel>
                                 <FormControl>
                                     <div className="relative">
-                                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/40" />
-                                        <Input placeholder="tu@email.com" className="h-11 pl-10" {...field} />
+                                        <IdCard className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/40" />
+                                        <Input placeholder="tu@email.com o cédula" className="h-11 pl-10" {...field} />
                                     </div>
                                 </FormControl>
                                 <FormMessage />
