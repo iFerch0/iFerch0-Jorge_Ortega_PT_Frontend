@@ -381,9 +381,9 @@ export default function Home() {
           >
             <div className="aspect-square relative rounded-2xl overflow-hidden border border-white/10 bg-white/5">
               <img
-                src="https://res.cloudinary.com/duhsqdstl/image/upload/v1771034838/IMAGEN_1_-_SIN_FONDO_fmrebn.png"
+                src="https://res.cloudinary.com/duhsqdstl/image/upload/v1771036408/WhatsApp_Image_2026-02-13_at_9.17.07_PM_s4vzvb.jpg"
                 alt="Jorge Ortega - Entrenador Personal"
-                className="absolute inset-0 h-full w-full object-contain object-bottom"
+                className="absolute inset-0 h-full w-full object-cover object-top"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-8">
                 <div>
