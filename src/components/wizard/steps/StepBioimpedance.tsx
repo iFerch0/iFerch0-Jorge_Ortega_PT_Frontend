@@ -12,7 +12,6 @@ import {
     FormItem,
     FormLabel,
     FormMessage,
-    FormDescription
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { WizardLayout } from "../WizardLayout";
@@ -20,6 +19,25 @@ import { useEffect, useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { UploadCloud, X, FileImage } from "lucide-react";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
+
+const fieldLabel = "text-[10px] font-semibold uppercase tracking-widest text-muted-foreground";
+
+const FIELDS: {
+    name: keyof Bioimpedance;
+    label: string;
+    unit: string;
+    step: string;
+}[] = [
+    { name: "weight",            label: "Peso",            unit: "kg",   step: "0.1" },
+    { name: "bmi",               label: "IMC",             unit: "",     step: "0.1" },
+    { name: "bodyFat",           label: "Grasa corporal",  unit: "%",    step: "0.1" },
+    { name: "visceralFat",       label: "Grasa visceral",  unit: "%",    step: "1"   },
+    { name: "muscleMass",        label: "Masa muscular",   unit: "kg",   step: "0.1" },
+    { name: "skeletalMuscleMass",label: "M. esquelética",  unit: "kg",   step: "0.1" },
+    { name: "bodyWater",         label: "Agua corporal",   unit: "L",    step: "0.1" },
+    { name: "basalMetabolism",   label: "Metab. basal",    unit: "kcal", step: "1"   },
+];
 
 export function StepBioimpedance() {
     const { data, setBioimpedance, nextStep, prevStep } = useWizardStore();
@@ -54,33 +72,28 @@ export function StepBioimpedance() {
     const form = useForm<Bioimpedance>({
         resolver: zodResolver(bioimpedanceSchema) as any,
         defaultValues: {
-            weight: data.bioimpedance?.weight || data.personalData?.weight || 0,
-            bmi: data.bioimpedance?.bmi || 0,
-            bodyFat: data.bioimpedance?.bodyFat || 0,
-            muscleMass: data.bioimpedance?.muscleMass || 0,
-            visceralFat: data.bioimpedance?.visceralFat || 0,
-            bodyWater: data.bioimpedance?.bodyWater || 0,
-            skeletalMuscleMass: data.bioimpedance?.skeletalMuscleMass || 0,
-            basalMetabolism: data.bioimpedance?.basalMetabolism || 0,
+            weight:            data.bioimpedance?.weight            || data.personalData?.weight || 0,
+            bmi:               data.bioimpedance?.bmi               || 0,
+            bodyFat:           data.bioimpedance?.bodyFat           || 0,
+            muscleMass:        data.bioimpedance?.muscleMass        || 0,
+            visceralFat:       data.bioimpedance?.visceralFat       || 0,
+            bodyWater:         data.bioimpedance?.bodyWater         || 0,
+            skeletalMuscleMass:data.bioimpedance?.skeletalMuscleMass|| 0,
+            basalMetabolism:   data.bioimpedance?.basalMetabolism   || 0,
         },
     });
 
-    // Auto-calculate BMI if height exists and weight changes
     const weight = form.watch("weight");
-    const height = data.personalData?.height; // cm
+    const height = data.personalData?.height;
 
     useEffect(() => {
         if (weight > 0 && height && height > 0) {
-            const heightInMeters = height / 100;
-            const bmi = weight / (heightInMeters * heightInMeters);
-            form.setValue("bmi", parseFloat(bmi.toFixed(1)));
+            const h = height / 100;
+            form.setValue("bmi", parseFloat((weight / (h * h)).toFixed(1)));
         }
     }, [weight, height, form]);
 
     const onSubmit = (values: Bioimpedance) => {
-        // Guardamos el archivo en el objeto de valores, aunque no persistirá en localStorage
-        // NextStep y StepReview se encargarán de manejarlo si está en memoria
-        // Ojo: Bioimpedance en store es inferido de bioimpedanceSchema, que ahora incluye 'bioimpedanceImage?: any'
         setBioimpedance({ ...values, bioimpedanceImage: file });
         nextStep();
     };
@@ -93,225 +106,103 @@ export function StepBioimpedance() {
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     <div className="grid gap-4 sm:grid-cols-2">
-                        <FormField
-                            control={form.control}
-                            name="weight"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Peso (kg)</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            type="number"
-                                            step="0.1"
-                                            {...field}
-                                            value={field.value ?? ''}
-                                            onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="bmi"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>IMC</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            type="number"
-                                            step="0.1"
-                                            {...field}
-                                            value={field.value ?? ''}
-                                            onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
-                                        />
-                                    </FormControl>
-                                    <FormDescription>
-                                        {height ? "Calculado automáticamente basado en altura." : "Ingresa manualmente."}
-                                    </FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                        {FIELDS.map(({ name, label, unit, step }) => (
+                            <FormField
+                                key={name}
+                                control={form.control}
+                                name={name}
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className={fieldLabel}>
+                                            {label}
+                                            {unit && (
+                                                <span className="ml-1 normal-case font-normal text-muted-foreground">
+                                                    ({unit})
+                                                </span>
+                                            )}
+                                            {name === "bmi" && height && (
+                                                <span className="ml-2 text-[9px] text-primary/70 normal-case font-normal">
+                                                    · auto
+                                                </span>
+                                            )}
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="number"
+                                                step={step}
+                                                {...field}
+                                                value={field.value ?? ""}
+                                                onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        ))}
                     </div>
 
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        <FormField
-                            control={form.control}
-                            name="bodyFat"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>% Grasa Corporal</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            type="number"
-                                            step="0.1"
-                                            {...field}
-                                            value={field.value ?? ''}
-                                            onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="visceralFat"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Grasa Visceral (%)</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            type="number"
-                                            step="1"
-                                            {...field}
-                                            value={field.value ?? ''}
-                                            onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        <FormField
-                            control={form.control}
-                            name="muscleMass"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Masa Muscular (kg)</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            type="number"
-                                            step="0.1"
-                                            {...field}
-                                            value={field.value ?? ''}
-                                            onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="skeletalMuscleMass"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>M. Musc. Esquelética (kg)</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            type="number"
-                                            step="0.1"
-                                            {...field}
-                                            value={field.value ?? ''}
-                                            onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        <FormField
-                            control={form.control}
-                            name="bodyWater"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Agua Corporal (Litros)</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            type="number"
-                                            step="0.1"
-                                            {...field}
-                                            value={field.value ?? ''}
-                                            onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="basalMetabolism"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Metabolismo Basal (Kcal)</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            type="number"
-                                            step="1"
-                                            {...field}
-                                            value={field.value ?? ''}
-                                            onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-
-                    {/* Image Upload for Ticket */}
+                    {/* Ticket upload */}
                     <div className="space-y-2">
-                        <FormLabel>Foto del Ticket de Bioimpedancia (Opcional)</FormLabel>
+                        <p className={fieldLabel}>
+                            Foto del ticket
+                            <span className="ml-1 normal-case font-normal text-muted-foreground">(opcional)</span>
+                        </p>
+
                         {preview ? (
-                            <div className="relative rounded-lg border overflow-hidden bg-muted/30">
-                                <div className="flex items-center gap-3 p-3">
-                                    <div className="relative h-20 w-16 shrink-0 rounded-md overflow-hidden border">
-                                        <Image src={preview} alt="Ticket" fill className="object-cover" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2">
-                                            <FileImage className="h-4 w-4 text-primary shrink-0" />
-                                            <span className="text-sm font-medium truncate">{file?.name}</span>
-                                        </div>
-                                        <span className="text-xs text-muted-foreground">
-                                            {file ? `${(file.size / 1024).toFixed(0)} KB` : ""}
-                                        </span>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={removeFile}
-                                        className="shrink-0 rounded-full p-1.5 hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </button>
+                            <div className="rounded-2xl border bg-muted/20 p-3 flex items-center gap-3">
+                                <div className="relative h-16 w-12 shrink-0 rounded-xl overflow-hidden border">
+                                    <Image src={preview} alt="Ticket" fill className="object-cover" />
                                 </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                        <FileImage className="h-3.5 w-3.5 text-primary shrink-0" />
+                                        <span className="text-sm font-medium truncate">{file?.name}</span>
+                                    </div>
+                                    <span className="text-xs text-muted-foreground">
+                                        {file ? `${(file.size / 1024).toFixed(0)} KB` : ""}
+                                    </span>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={removeFile}
+                                    className="shrink-0 rounded-full p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                                >
+                                    <X className="h-3.5 w-3.5" />
+                                </button>
                             </div>
                         ) : (
                             <div
                                 {...getRootProps()}
-                                className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                                className={cn(
+                                    "rounded-2xl border-2 border-dashed p-6 text-center cursor-pointer transition-all duration-200",
                                     isDragActive
-                                        ? "border-primary bg-primary/5"
-                                        : "border-muted-foreground/25 hover:border-primary/50"
-                                }`}
+                                        ? "border-primary bg-primary/10 scale-[1.01]"
+                                        : "border-border bg-muted/20 hover:border-primary/50 hover:bg-muted/40"
+                                )}
                             >
                                 <input {...getInputProps()} />
-                                <UploadCloud className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                                <UploadCloud className={cn(
+                                    "h-7 w-7 mx-auto mb-2 transition-colors",
+                                    isDragActive ? "text-primary" : "text-muted-foreground"
+                                )} />
                                 <p className="text-sm text-muted-foreground">
-                                    {isDragActive ? "Suelta aquí" : "Arrastra o haz clic para subir"}
+                                    {isDragActive ? "Suelta aquí" : "Arrastra o haz clic"}
                                 </p>
-                                <p className="text-xs text-muted-foreground mt-1">
+                                <p className="text-xs text-muted-foreground/70 mt-1">
                                     Foto de la hoja de resultados impresa
                                 </p>
                             </div>
                         )}
                     </div>
 
-                    <div className="flex justify-between pt-4">
-                        <Button type="button" variant="outline" onClick={prevStep}>
+                    <div className="flex justify-between pt-2">
+                        <Button type="button" variant="ghost" onClick={prevStep}>
                             Atrás
                         </Button>
-                        <Button type="submit" size="lg">Siguiente</Button>
+                        <Button type="submit" size="lg" className="min-w-[140px]">
+                            Siguiente
+                        </Button>
                     </div>
                 </form>
             </Form>

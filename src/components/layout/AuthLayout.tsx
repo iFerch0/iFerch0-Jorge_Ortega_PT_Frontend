@@ -93,7 +93,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
                 <div className="pointer-events-none absolute inset-0">
                     <div className="absolute -left-[20%] -top-[10%] h-[500px] w-[500px] rounded-full bg-amber-500/15 blur-[120px]" />
                     <div className="absolute -right-[15%] top-[40%] h-[400px] w-[400px] rounded-full bg-teal-500/10 blur-[100px]" />
-                    <div className="absolute -bottom-[15%] left-[30%] h-[350px] w-[350px] rounded-full bg-amber-600/8 blur-[90px]" />
+                    <div className="absolute -bottom-[15%] left-[30%] h-[350px] w-[350px] rounded-full bg-amber-600/10 blur-[90px]" />
                 </div>
 
                 {/* Noise */}

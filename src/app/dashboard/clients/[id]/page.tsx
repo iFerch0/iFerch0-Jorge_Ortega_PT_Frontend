@@ -2,13 +2,32 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Target, CalendarDays, TrendingDown, TrendingUp, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Target, CalendarDays, TrendingDown, TrendingUp, Loader2, Home, Building2, TreePine, Edit, User, AlertTriangle, Cake } from "lucide-react";
 import { clients as clientsApi, evaluations as evaluationsApi } from "@/lib/api";
-import type { Client, Evaluation } from "@/types/api";
+import type { Client, Evaluation, TrainingPlace } from "@/types/api";
 import { WeightChart } from "@/components/charts/WeightChart";
 import { CompositionChart } from "@/components/charts/CompositionChart";
+
+const trainingPlaceInfo: Record<TrainingPlace, { label: string; icon: typeof Home }> = {
+    GYM: { label: "Gimnasio", icon: Building2 },
+    HOME: { label: "Casa", icon: Home },
+    OUTDOOR: { label: "Aire libre", icon: TreePine },
+};
+
+function calculateAge(birthDate: string): number {
+    const birth = new Date(birthDate);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+        age--;
+    }
+    return age;
+}
 
 export default function ClientProfilePage() {
     const params = useParams<{ id: string }>();
@@ -106,8 +125,109 @@ export default function ClientProfilePage() {
         },
     ];
 
+    const placeInfo = client.trainingPlace ? trainingPlaceInfo[client.trainingPlace] : null;
+    const PlaceIcon = placeInfo?.icon || Home;
+
     return (
         <div className="space-y-6">
+            {/* Client Profile Header */}
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+                            <User className="h-8 w-8 text-primary" />
+                        </div>
+                        <div>
+                            <CardTitle className="text-xl">
+                                {client.firstName} {client.lastName}
+                            </CardTitle>
+                            <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
+                                {client.birthDate && (
+                                    <span className="flex items-center gap-1">
+                                        <Cake className="h-4 w-4" />
+                                        {calculateAge(client.birthDate)} años
+                                    </span>
+                                )}
+                                {placeInfo && (
+                                    <span className="flex items-center gap-1">
+                                        <PlaceIcon className="h-4 w-4" />
+                                        {placeInfo.label}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                    <Button variant="outline" size="sm" asChild>
+                        <Link href={`/dashboard/clients/${id}/edit`}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Editar
+                        </Link>
+                    </Button>
+                </CardHeader>
+            </Card>
+
+            {/* Objectives & Pathologies */}
+            <div className="grid gap-4 md:grid-cols-2">
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base flex items-center gap-2">
+                            <Target className="h-4 w-4" />
+                            Objetivos
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {client.objectives && client.objectives.length > 0 ? (
+                            <ul className="space-y-2">
+                                {client.objectives.map((obj, i) => (
+                                    <li key={obj.id || i} className="flex items-start gap-2 text-sm">
+                                        <span className="text-primary">•</span>
+                                        {obj.content}
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">Sin objetivos definidos</p>
+                        )}
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base flex items-center gap-2">
+                            <AlertTriangle className="h-4 w-4" />
+                            Patologías
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {client.pathologies && client.pathologies.length > 0 ? (
+                            <ul className="space-y-2">
+                                {client.pathologies.map((p, i) => (
+                                    <li key={p.id || i} className="flex items-center justify-between text-sm">
+                                        <span>{p.name}</span>
+                                        {p.severity && (
+                                            <Badge
+                                                variant="secondary"
+                                                className={
+                                                    p.severity === "High"
+                                                        ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                                        : p.severity === "Medium"
+                                                          ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                                                          : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                                                }
+                                            >
+                                                {p.severity}
+                                            </Badge>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">Sin patologías registradas</p>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+
             {/* Stats Grid */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {stats.map((stat, index) => {

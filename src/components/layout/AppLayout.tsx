@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Menu, Dumbbell, Users, Settings, LogOut, ChevronRight } from "lucide-react";
+import { Menu, Dumbbell, Users, Settings, LogOut, ChevronRight, Loader2, User } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useSession } from "@/hooks/useSession";
 import { auth } from "@/lib/api";
+import { OnboardingGuard } from "@/components/onboarding";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -54,6 +55,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, loading } = useSession();
 
+  // Redirect CLIENTs to portal - they shouldn't access dashboard
+  useEffect(() => {
+    if (!loading && user?.role === "CLIENT") {
+      router.replace("/portal");
+    }
+  }, [loading, user?.role, router]);
+
   function getInitials(name: string | null | undefined, email: string | null | undefined) {
     if (name) {
       const parts = name.split(" ");
@@ -79,6 +87,15 @@ export default function AppLayout({ children }: AppLayoutProps) {
   }
 
   const pageTitle = getPageTitle(pathname);
+
+  // Show loading while checking role or redirecting CLIENT
+  if (loading || user?.role === "CLIENT") {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -143,7 +160,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" side="top">
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard/settings">Configuración</Link>
+                    <Link href="/dashboard/settings">
+                      <User className="mr-2 h-4 w-4" />
+                      Ver Perfil
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-destructive" onClick={handleLogout}>
@@ -195,6 +215,35 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   </Link>
                 ))}
               </nav>
+              <div className="mt-auto border-t pt-4">
+                <div className="flex items-center gap-3 px-2 mb-4">
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src={user?.image || ""} alt={user?.name || "User"} />
+                    <AvatarFallback className="text-xs">
+                      {loading ? "..." : getInitials(user?.name, user?.email)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{user?.name || "Entrenador"}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                  </div>
+                </div>
+                <Link
+                  href="/dashboard/settings"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
+                >
+                  <User className="h-5 w-5" />
+                  Ver Perfil
+                </Link>
+                <button
+                  onClick={() => { setIsMobileMenuOpen(false); handleLogout(); }}
+                  className="mx-[-0.65rem] flex w-full items-center gap-4 rounded-xl px-3 py-2 text-destructive hover:bg-destructive/10"
+                >
+                  <LogOut className="h-5 w-5" />
+                  Cerrar Sesión
+                </button>
+              </div>
             </SheetContent>
           </Sheet>
 
@@ -227,7 +276,16 @@ export default function AppLayout({ children }: AppLayoutProps) {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/dashboard/settings">Configuración</Link>
+                <Link href="/dashboard/settings">
+                  <User className="mr-2 h-4 w-4" />
+                  Ver Perfil
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/settings">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Configuración
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-destructive" onClick={handleLogout}>
@@ -239,7 +297,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
         </header>
 
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-          {children}
+          <OnboardingGuard skipWizardRedirect>
+            {children}
+          </OnboardingGuard>
         </main>
       </div>
     </div>

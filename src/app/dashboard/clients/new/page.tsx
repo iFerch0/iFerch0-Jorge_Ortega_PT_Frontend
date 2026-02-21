@@ -1,9 +1,9 @@
 "use client";
 
 import { useWizardStore } from "@/store/wizard-store";
-import { WizardLayout } from "@/components/wizard/WizardLayout";
 import { StepPersonalData } from "@/components/wizard/steps/StepPersonalData";
 import { StepObjectives } from "@/components/wizard/steps/StepObjectives";
+import { StepPathologies } from "@/components/wizard/steps/StepPathologies";
 import { StepPhysicalAssessment } from "@/components/wizard/steps/StepPhysicalAssessment";
 import { StepBioimpedance } from "@/components/wizard/steps/StepBioimpedance";
 import { StepPhotos } from "@/components/wizard/steps/StepPhotos";
@@ -20,14 +20,16 @@ export default function NewClientPage() {
             case 1:
                 return <StepObjectives />;
             case 2:
-                return <StepPhysicalAssessment />;
+                return <StepPathologies />;
             case 3:
-                return <StepBioimpedance />;
+                return <StepPhysicalAssessment />;
             case 4:
-                return <StepPhotos />;
+                return <StepBioimpedance />;
             case 5:
-                return <StepAvailability />;
+                return <StepPhotos />;
             case 6:
+                return <StepAvailability />;
+            case 7:
                 return <StepReview />;
             default:
                 return <StepPersonalData />;

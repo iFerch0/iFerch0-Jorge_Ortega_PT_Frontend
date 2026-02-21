@@ -27,7 +27,7 @@ export default function NewAssessmentPage() {
                     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
                 );
                 setLatestEval(sorted[0]);
-                setClientHeight(client.height);
+                setClientHeight(client.height ?? undefined);
             })
             .catch(() => { })
             .finally(() => setLoading(false));

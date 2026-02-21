@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
-import { Loader2, Eye, EyeOff, Mail, Lock, ArrowRight, Info, IdCard } from "lucide-react";
+import { Loader2, Eye, EyeOff, Lock, ArrowRight, Info, IdCard } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,9 +50,16 @@ export default function LoginPage() {
             }
 
             toast.success("Inicio de sesión exitoso");
-            router.push("/dashboard");
+            
+            // Redirect based on role (returned from login verification)
+            if (result.role === "CLIENT") {
+                router.push("/portal");
+            } else {
+                router.push("/dashboard");
+            }
             router.refresh();
-        } catch {
+        } catch (err) {
+            console.error("Login error:", err);
             toast.error("Error de conexión. Intenta de nuevo.");
         }
     }
@@ -75,7 +82,7 @@ export default function LoginPage() {
                         name="email"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Email o Cédula</FormLabel>
+                                <FormLabel className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Email o Cédula</FormLabel>
                                 <FormControl>
                                     <div className="relative">
                                         <IdCard className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/40" />
@@ -92,7 +99,7 @@ export default function LoginPage() {
                         render={({ field }) => (
                             <FormItem>
                                 <div className="flex items-center justify-between">
-                                    <FormLabel className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Contraseña</FormLabel>
+                                    <FormLabel className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Contraseña</FormLabel>
                                     <button
                                         type="button"
                                         className="text-xs text-muted-foreground/60 hover:text-primary transition-colors"

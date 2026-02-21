@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useWizardStore } from "@/store/wizard-store";
@@ -22,6 +23,18 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { WizardLayout } from "../WizardLayout";
+import { cn } from "@/lib/utils";
+
+function calculateAge(birthDate: string): number {
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+}
+
+const fieldLabel = "text-sm font-semibold uppercase tracking-widest text-muted-foreground";
 
 export function StepPersonalData() {
     const { data, setPersonalData, nextStep } = useWizardStore();
@@ -34,12 +47,21 @@ export function StepPersonalData() {
             cedula: "",
             email: "",
             phone: "",
-            age: 0,
-            gender: "male",
+            birthDate: "",
+            gender: "MALE",
             height: 0,
             weight: 0,
         },
     });
+
+    useEffect(() => {
+        if (data.personalData?.firstName && !form.getValues("firstName")) {
+            form.reset(data.personalData);
+        }
+    }, [data.personalData, form]);
+
+    const watchedBirthDate = form.watch("birthDate");
+    const calculatedAge = watchedBirthDate ? calculateAge(watchedBirthDate) : null;
 
     function onSubmit(values: PersonalData) {
         setPersonalData(values);
@@ -53,13 +75,15 @@ export function StepPersonalData() {
         >
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="grid gap-4 md:grid-cols-2">
+
+                    {/* Nombre / Apellido */}
+                    <div className="grid gap-4 sm:grid-cols-2">
                         <FormField
                             control={form.control}
                             name="firstName"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Nombre</FormLabel>
+                                    <FormLabel className={fieldLabel}>Nombre</FormLabel>
                                     <FormControl>
                                         <Input placeholder="Juan" {...field} />
                                     </FormControl>
@@ -72,7 +96,7 @@ export function StepPersonalData() {
                             name="lastName"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Apellido</FormLabel>
+                                    <FormLabel className={fieldLabel}>Apellido</FormLabel>
                                     <FormControl>
                                         <Input placeholder="Pérez" {...field} />
                                     </FormControl>
@@ -82,16 +106,26 @@ export function StepPersonalData() {
                         />
                     </div>
 
-                    <div className="grid gap-4 md:grid-cols-2">
+                    {/* Cédula / Teléfono */}
+                    <div className="grid gap-4 sm:grid-cols-2">
                         <FormField
                             control={form.control}
                             name="cedula"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Cédula / Identificación</FormLabel>
+                                    <FormLabel className={fieldLabel}>Cédula</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="1234567890" {...field} />
+                                        <Input
+                                            placeholder="1234567890"
+                                            {...field}
+                                            disabled={!!data.personalData?.cedula}
+                                        />
                                     </FormControl>
+                                    {data.personalData?.cedula && (
+                                        <p className="text-[11px] text-muted-foreground">
+                                            No puede modificarse
+                                        </p>
+                                    )}
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -101,7 +135,7 @@ export function StepPersonalData() {
                             name="phone"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Teléfono</FormLabel>
+                                    <FormLabel className={fieldLabel}>Teléfono</FormLabel>
                                     <FormControl>
                                         <Input placeholder="+57 300 123 4567" {...field} />
                                     </FormControl>
@@ -111,15 +145,27 @@ export function StepPersonalData() {
                         />
                     </div>
 
-                    <div className="grid gap-4 md:grid-cols-4">
+                    {/* Fecha / Género */}
+                    <div className="grid gap-4 sm:grid-cols-2">
                         <FormField
                             control={form.control}
-                            name="age"
+                            name="birthDate"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Edad</FormLabel>
+                                    <div className="flex items-baseline gap-2">
+                                        <FormLabel className={fieldLabel}>Nacimiento</FormLabel>
+                                        {calculatedAge !== null && calculatedAge > 0 && (
+                                            <span className="text-xs font-medium text-primary">
+                                                {calculatedAge} años
+                                            </span>
+                                        )}
+                                    </div>
                                     <FormControl>
-                                        <Input type="number" {...field} />
+                                        <Input
+                                            type="date"
+                                            max={new Date().toISOString().split("T")[0]}
+                                            {...field}
+                                        />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -130,7 +176,7 @@ export function StepPersonalData() {
                             name="gender"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Género</FormLabel>
+                                    <FormLabel className={fieldLabel}>Género</FormLabel>
                                     <Select
                                         onValueChange={field.onChange}
                                         defaultValue={field.value}
@@ -141,21 +187,25 @@ export function StepPersonalData() {
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value="male">Masculino</SelectItem>
-                                            <SelectItem value="female">Femenino</SelectItem>
-                                            <SelectItem value="other">Otro</SelectItem>
+                                            <SelectItem value="MALE">Masculino</SelectItem>
+                                            <SelectItem value="FEMALE">Femenino</SelectItem>
+                                            <SelectItem value="OTHER">Otro</SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
+                    </div>
+
+                    {/* Altura / Peso */}
+                    <div className="grid gap-4 sm:grid-cols-2">
                         <FormField
                             control={form.control}
                             name="height"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Altura (cm)</FormLabel>
+                                    <FormLabel className={fieldLabel}>Altura (cm)</FormLabel>
                                     <FormControl>
                                         <Input type="number" placeholder="175" {...field} />
                                     </FormControl>
@@ -168,7 +218,7 @@ export function StepPersonalData() {
                             name="weight"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Peso (kg)</FormLabel>
+                                    <FormLabel className={fieldLabel}>Peso (kg)</FormLabel>
                                     <FormControl>
                                         <Input type="number" placeholder="70" {...field} />
                                     </FormControl>
@@ -178,8 +228,8 @@ export function StepPersonalData() {
                         />
                     </div>
 
-                    <div className="flex justify-end">
-                        <Button type="submit" size="lg">
+                    <div className="flex justify-end pt-2">
+                        <Button type="submit" size="lg" className="min-w-[140px]">
                             Siguiente
                         </Button>
                     </div>

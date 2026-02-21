@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
-import { Loader2, Eye, EyeOff, Mail, Lock, User, ArrowRight } from "lucide-react";
+import { Loader2, Eye, EyeOff, Lock, User, ArrowRight, IdCard, Calendar } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,10 @@ import {
 const registerSchema = z.object({
     firstName: z.string().min(2, { message: "El nombre es requerido" }),
     lastName: z.string().min(2, { message: "El apellido es requerido" }),
-    email: z.string().email({ message: "Email inválido" }),
+    birthDate: z.string().min(1, { message: "La fecha de nacimiento es requerida" }).refine((val) => {
+        return new Date(val) < new Date();
+    }, "La fecha no puede ser futura"),
+    cedula: z.string().min(5, { message: "La identificación debe tener al menos 5 caracteres" }),
     password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres" }),
 });
 
@@ -56,7 +59,8 @@ export default function RegisterPage() {
         defaultValues: {
             firstName: "",
             lastName: "",
-            email: "",
+            birthDate: "",
+            cedula: "",
             password: "",
         },
     });
@@ -71,8 +75,10 @@ export default function RegisterPage() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    name: `${values.firstName} ${values.lastName}`,
-                    email: values.email,
+                    firstName: values.firstName,
+                    lastName: values.lastName,
+                    birthDate: values.birthDate,
+                    cedula: values.cedula,
                     password: values.password,
                 }),
             });
@@ -150,17 +156,41 @@ export default function RegisterPage() {
 
                     <FormField
                         control={form.control}
-                        name="email"
+                        name="birthDate"
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                                    Email
+                                    Fecha de Nacimiento
                                 </FormLabel>
                                 <FormControl>
                                     <div className="relative">
-                                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/40" />
+                                        <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/40" />
                                         <Input
-                                            placeholder="entrenador@gym.com"
+                                            type="date"
+                                            max={new Date().toISOString().split("T")[0]}
+                                            className="h-11 pl-10"
+                                            {...field}
+                                        />
+                                    </div>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="cedula"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                    Identificación (Cédula)
+                                </FormLabel>
+                                <FormControl>
+                                    <div className="relative">
+                                        <IdCard className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/40" />
+                                        <Input
+                                            placeholder="1234567890"
                                             className="h-11 pl-10"
                                             {...field}
                                         />

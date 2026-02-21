@@ -10,6 +10,15 @@ import type {
   UpdateProfileDTO,
   Gym,
   UpdateGymDTO,
+  // New types for onboarding and me/trainer endpoints
+  OnboardingStatus,
+  AcceptConsentDTO,
+  ChangePasswordDTO,
+  ClientProfile,
+  UpdateClientProfileDTO,
+  UpdateAssessmentDTO,
+  Bioimpedance,
+  ProgressPhoto,
 } from "@/types/api";
 
 const API_BASE = "/api";
@@ -74,7 +83,7 @@ export const auth = {
     return data.csrfToken;
   },
 
-  async login(email: string, password: string): Promise<{ ok: boolean; error?: string }> {
+  async login(email: string, password: string): Promise<{ ok: boolean; error?: string; role?: string }> {
     const csrfToken = await this.getCsrfToken();
 
     const res = await fetch(`${API_BASE}/auth/callback/credentials`, {
@@ -102,7 +111,16 @@ export const auth = {
       };
     }
 
-    return { ok: true };
+    // Verify the session was established (cookie was set properly)
+    const session = await this.getSession();
+    if (!session?.user) {
+      return {
+        ok: false,
+        error: "Credenciales incorrectas o no se pudo establecer la sesión.",
+      };
+    }
+
+    return { ok: true, role: session.user.role };
   },
 
   async logout(): Promise<void> {
@@ -261,6 +279,128 @@ export const gym = {
     return apiFetch<Gym>("/gym", {
       method: "PATCH",
       body: JSON.stringify(data),
+    });
+  },
+};
+
+// ============================================
+// Me (Client Portal) - Onboarding & Profile
+// ============================================
+
+export const me = {
+  // Onboarding
+  getOnboardingStatus(): Promise<OnboardingStatus> {
+    return apiFetch<OnboardingStatus>("/me/onboarding-status");
+  },
+
+  changePassword(data: ChangePasswordDTO): Promise<{ success: boolean }> {
+    return apiFetch<{ success: boolean }>("/me/change-password", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  acceptConsent(data: AcceptConsentDTO): Promise<{ success: boolean; consentId: string }> {
+    return apiFetch<{ success: boolean; consentId: string }>("/me/consents/accept", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  completeWizard(): Promise<{ success: boolean }> {
+    return apiFetch<{ success: boolean }>("/me/wizard-complete", {
+      method: "POST",
+    });
+  },
+
+  // Profile
+  getProfile(): Promise<ClientProfile> {
+    return apiFetch<ClientProfile>("/me/profile");
+  },
+
+  updateProfile(data: UpdateClientProfileDTO): Promise<ClientProfile> {
+    return apiFetch<ClientProfile>("/me/profile", {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Assessments (read-only for clients)
+  getAssessments(params?: { page?: number; limit?: number }): Promise<PaginatedResponse<Evaluation>> {
+    const query = new URLSearchParams();
+    if (params?.page) query.set("page", String(params.page));
+    if (params?.limit) query.set("limit", String(params.limit));
+    const qs = query.toString();
+    return apiFetch<PaginatedResponse<Evaluation>>(`/me/assessments${qs ? `?${qs}` : ""}`);
+  },
+
+  getAssessment(id: string): Promise<Evaluation> {
+    return apiFetch<Evaluation>(`/me/assessments/${id}`);
+  },
+
+  // Photo upload
+  async uploadPhotos(files: { front?: File; back?: File; side?: File }): Promise<ProgressPhoto> {
+    const formData = new FormData();
+    if (files.front) formData.append("front", files.front);
+    if (files.back) formData.append("back", files.back);
+    if (files.side) formData.append("side", files.side);
+
+    return apiFetch<ProgressPhoto>("/me/photos", {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  // Bioimpedance ticket upload
+  async uploadBioimpedanceTicket(file: File): Promise<Bioimpedance> {
+    const formData = new FormData();
+    formData.append("ticket", file);
+
+    return apiFetch<Bioimpedance>("/me/bioimpedance/ticket", {
+      method: "POST",
+      body: formData,
+    });
+  },
+};
+
+// ============================================
+// Trainer - Assessment Management
+// ============================================
+
+export const trainer = {
+  getAssessments(params?: { page?: number; limit?: number; clientId?: string }): Promise<PaginatedResponse<Evaluation & { client?: { firstName: string; lastName: string } }>> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set("page", params.page.toString());
+    if (params?.limit) searchParams.set("limit", params.limit.toString());
+    if (params?.clientId) searchParams.set("clientId", params.clientId);
+    const qs = searchParams.toString();
+    return apiFetch(`/trainer/assessments${qs ? `?${qs}` : ""}`);
+  },
+
+  getAssessment(id: string): Promise<Evaluation> {
+    return apiFetch<Evaluation>(`/trainer/assessments/${id}`);
+  },
+
+  updateAssessment(id: string, data: UpdateAssessmentDTO): Promise<Evaluation> {
+    return apiFetch<Evaluation>(`/trainer/assessments/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  },
+
+  deleteAssessment(id: string): Promise<void> {
+    return apiFetch<void>(`/trainer/assessments/${id}`, {
+      method: "DELETE",
+    });
+  },
+
+  async uploadClientTicket(clientId: string, file: File): Promise<Bioimpedance> {
+    const formData = new FormData();
+    formData.append("ticket", file);
+
+    return apiFetch<Bioimpedance>(`/trainer/clients/${clientId}/bioimpedance/ticket`, {
+      method: "POST",
+      body: formData,
     });
   },
 };

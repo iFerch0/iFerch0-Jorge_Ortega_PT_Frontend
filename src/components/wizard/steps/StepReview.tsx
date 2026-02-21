@@ -7,15 +7,8 @@ import { useRouter } from "next/navigation";
 import { WizardLayout } from "../WizardLayout";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { User, Target, Activity, Calendar, Scale, Camera } from "lucide-react";
+import { User, Target, Activity, Calendar, Scale, Camera, HeartPulse, MapPin, Building2, Home, TreePine } from "lucide-react";
 import Image from "next/image";
-
-const goalLabels: Record<string, string> = {
-    lose_weight: "Perder Peso",
-    gain_muscle: "Ganar Músculo",
-    maintain: "Mantenerse",
-    improve_endurance: "Mejorar Resistencia",
-};
 
 const experienceLabels: Record<string, string> = {
     beginner: "Principiante (0-6 meses)",
@@ -48,47 +41,65 @@ const durationLabels: Record<string, string> = {
     "90_min_plus": "+90 Minutos",
 };
 
-const equipmentLabels: Record<string, string> = {
-    gym_full: "Gimnasio Completo",
-    dumbbells: "Mancuernas",
-    barbell: "Barra y Discos",
-    bands: "Bandas Elásticas",
-    bodyweight: "Solo Peso Corporal",
-    cardio_machine: "Máquina de Cardio",
+const trainingPlaceLabels: Record<string, { label: string; icon: typeof Building2 }> = {
+    GYM: { label: "Gimnasio", icon: Building2 },
+    HOME: { label: "Casa", icon: Home },
+    OUTDOOR: { label: "Aire Libre", icon: TreePine },
 };
 
-const genderMap: Record<string, string> = { male: "MALE", female: "FEMALE", other: "OTHER" };
+const genderLabels: Record<string, string> = {
+    MALE: "Masculino",
+    FEMALE: "Femenino",
+    OTHER: "Otro",
+};
+
+const severityLabels: Record<string, string> = {
+    Low: "Baja",
+    Medium: "Media",
+    High: "Alta",
+};
+
+function calculateAge(birthDate: string): number {
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+        age--;
+    }
+    return age;
+}
 
 export function StepReview() {
     const { data, photos, resetWizard, prevStep } = useWizardStore();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter();
 
+    const pathologies = data.pathologies;
+
     async function onComplete() {
         setIsSubmitting(true);
 
         try {
-            // 1. Preparar datos para Crear Cliente
-            // Calculamos una fecha de nacimiento aproximada ya que solo tenemos edad
-            const currentYear = new Date().getFullYear();
-            const birthYear = currentYear - (data.personalData?.age || 20);
-            const approximateBirthDate = `${birthYear}-01-01`; // ISO YYYY-MM-DD
-
+            // Preparar datos para Crear/Actualizar Cliente
             const clientPayload = {
                 firstName: data.personalData?.firstName,
                 lastName: data.personalData?.lastName,
                 cedula: data.personalData?.cedula,
                 email: data.personalData?.email || "",
                 phone: data.personalData?.phone,
-                birthDate: approximateBirthDate,
-                gender: genderMap[data.personalData?.gender || "other"] || "OTHER",
+                birthDate: data.personalData?.birthDate,
+                gender: data.personalData?.gender || "OTHER",
                 height: data.personalData?.height,
-                objectives: [{ content: data.objectives?.goal }, { content: data.objectives?.notes }].filter(o => o.content),
-                pathologies: [
-                    { name: data.physicalAssessment?.injuries, notes: "Lesiones" },
-                    { name: data.physicalAssessment?.medicalConditions, notes: "Condiciones Médicas" }
-                ].filter(p => p.name)
+                trainingPlace: data.availability?.trainingPlace,
+                objectives: data.objectives?.objectives?.map(obj => ({ content: obj.content })) || [],
+                pathologies: pathologies?.pathologies?.map(p => ({
+                    name: p.name,
+                    severity: p.severity,
+                    notes: p.notes
+                })) || []
             };
+
             const clientResponse = await fetch('/api/clients', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -105,7 +116,7 @@ export function StepReview() {
 
             if (!clientId) throw new Error("No se recibió ID del cliente creado");
 
-            // 2. Crear Evaluación Inicial (Bioimpedancia + Fotos)
+            // Crear Evaluación Inicial (Bioimpedancia + Fotos)
             const evaluationFormData = new FormData();
             evaluationFormData.append('clientId', clientId);
             evaluationFormData.append('weight', String(data.bioimpedance?.weight || data.personalData?.weight || 0));
@@ -135,7 +146,6 @@ export function StepReview() {
             const evalResponse = await fetch('/api/evaluations', {
                 method: 'POST',
                 body: evaluationFormData
-                // Content-Type header is automatic with FormData
             });
 
             if (!evalResponse.ok) {
@@ -178,6 +188,12 @@ export function StepReview() {
         };
     }, [photos]);
 
+    const birthDate = data.personalData?.birthDate;
+    const age = birthDate ? calculateAge(birthDate) : null;
+    const TrainingPlaceIcon = data.availability?.trainingPlace 
+        ? trainingPlaceLabels[data.availability.trainingPlace]?.icon 
+        : MapPin;
+
     return (
         <WizardLayout
             title="Resumen y Confirmación"
@@ -194,7 +210,8 @@ export function StepReview() {
                         <p><span className="font-medium text-foreground">Nombre:</span> {data.personalData?.firstName} {data.personalData?.lastName}</p>
                         <p><span className="font-medium text-foreground">Cédula:</span> {data.personalData?.cedula}</p>
                         <p><span className="font-medium text-foreground">Teléfono:</span> {data.personalData?.phone}</p>
-                        <p><span className="font-medium text-foreground">Edad:</span> {data.personalData?.age} años</p>
+                        <p><span className="font-medium text-foreground">Fecha Nac.:</span> {birthDate || "N/A"} {age ? `(${age} años)` : ""}</p>
+                        <p><span className="font-medium text-foreground">Género:</span> {genderLabels[data.personalData?.gender || ""] || data.personalData?.gender}</p>
                         <p><span className="font-medium text-foreground">Peso/Altura:</span> {data.personalData?.weight}kg / {data.personalData?.height}cm</p>
                     </div>
                 </div>
@@ -206,23 +223,53 @@ export function StepReview() {
                         <h3>Objetivos</h3>
                     </div>
                     <div className="text-sm grid gap-1 text-muted-foreground">
-                        <p><span className="font-medium text-foreground">Meta:</span> {goalLabels[data.objectives?.goal || ""] || data.objectives?.goal}</p>
-                        <p><span className="font-medium text-foreground">Experiencia:</span> {experienceLabels[data.objectives?.experienceLevel || ""] || data.objectives?.experienceLevel}</p>
-                        <p><span className="font-medium text-foreground">Actividad:</span> {activityLabels[data.objectives?.activityLevel || ""] || data.objectives?.activityLevel}</p>
-                        <p><span className="font-medium text-foreground">Notas:</span> {data.objectives?.notes || "Ninguna"}</p>
+                        {data.objectives?.objectives && data.objectives.objectives.length > 0 ? (
+                            <ul className="list-disc list-inside space-y-1">
+                                {data.objectives.objectives.map((obj, idx) => (
+                                    <li key={idx} className="text-foreground">{obj.content}</li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p>Sin objetivos definidos</p>
+                        )}
+                        <p className="mt-2"><span className="font-medium text-foreground">Experiencia:</span> {experienceLabels[data.objectives?.experienceLevel || ""] || data.objectives?.experienceLevel || "N/A"}</p>
+                        <p><span className="font-medium text-foreground">Actividad:</span> {activityLabels[data.objectives?.activityLevel || ""] || data.objectives?.activityLevel || "N/A"}</p>
+                        {data.objectives?.notes && (
+                            <p><span className="font-medium text-foreground">Notas:</span> {data.objectives.notes}</p>
+                        )}
                     </div>
                 </div>
 
-                {/* Section: Physical Assessment */}
+                {/* Section: Pathologies */}
                 <div className="rounded-lg border p-4 space-y-3">
                     <div className="flex items-center gap-2 text-primary font-semibold">
-                        <Activity className="h-5 w-5" />
-                        <h3>Valoración Física</h3>
+                        <HeartPulse className="h-5 w-5" />
+                        <h3>Condiciones de Salud</h3>
                     </div>
-                    <div className="text-sm grid gap-1 text-muted-foreground">
-                        <p><span className="font-medium text-foreground">Lesiones:</span> {data.physicalAssessment?.injuries || "Ninguna"}</p>
-                        <p><span className="font-medium text-foreground">Condiciones:</span> {data.physicalAssessment?.medicalConditions || "Ninguna"}</p>
-                        <p><span className="font-medium text-foreground">Medicamentos:</span> {data.physicalAssessment?.medications || "Ninguno"}</p>
+                    <div className="text-sm text-muted-foreground">
+                        {pathologies?.hasNoPathologies ? (
+                            <p className="text-green-600 font-medium">Sin condiciones de salud reportadas</p>
+                        ) : pathologies?.pathologies && pathologies.pathologies.length > 0 ? (
+                            <ul className="space-y-2">
+                                {pathologies.pathologies.map((p, idx) => (
+                                    <li key={idx} className="border-l-2 border-primary/30 pl-3">
+                                        <span className="font-medium text-foreground">{p.name}</span>
+                                        {p.severity && (
+                                            <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${
+                                                p.severity === 'High' ? 'bg-red-100 text-red-700' :
+                                                p.severity === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                                                'bg-green-100 text-green-700'
+                                            }`}>
+                                                {severityLabels[p.severity]}
+                                            </span>
+                                        )}
+                                        {p.notes && <p className="text-xs mt-1">{p.notes}</p>}
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p>Sin información de patologías</p>
+                        )}
                     </div>
                 </div>
 
@@ -279,9 +326,17 @@ export function StepReview() {
                         <h3>Disponibilidad</h3>
                     </div>
                     <div className="text-sm grid gap-1 text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                            <span className="font-medium text-foreground">Lugar:</span>
+                            {data.availability?.trainingPlace && (
+                                <>
+                                    <TrainingPlaceIcon className="h-4 w-4" />
+                                    <span>{trainingPlaceLabels[data.availability.trainingPlace]?.label || data.availability.trainingPlace}</span>
+                                </>
+                            )}
+                        </div>
                         <p><span className="font-medium text-foreground">Días:</span> {data.availability?.trainingDays?.map(d => dayLabels[d] || d).join(", ") || "N/A"}</p>
                         <p><span className="font-medium text-foreground">Duración:</span> {durationLabels[data.availability?.trainingDuration || ""] || data.availability?.trainingDuration}</p>
-                        <p><span className="font-medium text-foreground">Equipo:</span> {data.availability?.equipment?.map(e => equipmentLabels[e] || e).join(", ") || "N/A"}</p>
                     </div>
                 </div>
             </div>
